@@ -147,8 +147,17 @@ fun LoginScreen(navController: NavHostController) {
                 fontWeight = FontWeight.Bold
             )
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        TextButton(onClick = { myauth.forgotPassword(email) }) {
+            Text(
+                text = "Forgot Password?",
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         
         TextButton(onClick = { navController.navigate(ROUTE_REGISTER_USER) }) {
             Text(

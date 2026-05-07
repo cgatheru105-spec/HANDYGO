@@ -14,7 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,20 +28,30 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.handygo.ProfileViewModel
+import com.example.handygo.ProviderPost
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SellerProfileScreen(
     navController: NavHostController, 
     profileViewModel: ProfileViewModel = viewModel(),
-    sellerName: String = "John Maina",
-    category: String = "Professional Plumber",
-    location: String = "Westlands, Nairobi",
-    cost: String = "Ksh 1,200 - 3,000 per task"
+    sellerName: String? = null,
+    category: String = "Professional Service Provider"
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
+    
+    // If no sellerName is passed, we show the current profile
+    val displayName = sellerName ?: profileViewModel.name.value
+    val displayLocation = if (sellerName == null) profileViewModel.location.value else "Nairobi, Kenya"
+    val displayBio = if (sellerName == null) profileViewModel.bio.value else "Professional services with guaranteed quality."
+    val profileImage = if (sellerName == null) profileViewModel.profileImageUri.value else null
+    val contact = if (sellerName == null) profileViewModel.contact.value else "+254 700 123 456"
+    
+    val myProducts = profileViewModel.marketplaceProducts.filter { sellerName == null || it.sellerName == sellerName || it.sellerName == "You" }
+    val myPosts = profileViewModel.providerPosts // In a real app, filter by sellerId
 
     Scaffold(
         topBar = {
@@ -70,14 +80,23 @@ fun SellerProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Profile Image
-            Surface(
-                modifier = Modifier.size(100.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
             ) {
-                Box(contentAlignment = Alignment.Center) {
+                if (profileImage != null) {
+                    AsyncImage(
+                        model = profileImage,
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
                     Text(
-                        text = sellerName.first().toString(),
+                        text = displayName.take(1).uppercase(),
                         style = MaterialTheme.typography.displayMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
@@ -88,7 +107,7 @@ fun SellerProfileScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = sellerName,
+                text = displayName,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
@@ -106,6 +125,15 @@ fun SellerProfileScreen(
                 Text(text = " 4.8 (150 reviews)", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = displayBio,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
             Spacer(modifier = Modifier.height(32.dp))
 
             // Contact and Location Information
@@ -116,44 +144,100 @@ fun SellerProfileScreen(
                 elevation = CardDefaults.cardElevation(2.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    InfoRow(icon = Icons.Default.LocationOn, label = "Base Location", value = location)
-                    InfoRow(icon = Icons.Default.Payments, label = "Service Cost", value = cost)
-                    InfoRow(icon = Icons.Default.Phone, label = "Contact number", value = "+254 700 123 456")
+                    InfoRow(icon = Icons.Default.LocationOn, label = "Base Location", value = displayLocation)
+                    InfoRow(icon = Icons.Default.Phone, label = "Contact number", value = contact)
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Gallery / Photos Section
-            Text(
-                text = "Past Work Samples",
-                modifier = Modifier.fillMaxWidth(),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // Mock gallery
-                items(5) { index ->
-                    Box(
-                        modifier = Modifier
-                            .size(160.dp, 110.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.secondaryContainer),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Image, 
-                            contentDescription = "Work sample $index",
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(40.dp)
-                        )
+            // Marketplace Items Section
+            if (myProducts.isNotEmpty()) {
+                Text(
+                    text = "Marketplace Products",
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(myProducts) { product ->
+                        Card(
+                            modifier = Modifier.size(160.dp, 200.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            elevation = CardDefaults.cardElevation(2.dp)
+                        ) {
+                            Column {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth().height(100.dp).background(MaterialTheme.colorScheme.secondaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (product.imageUri != null) {
+                                        AsyncImage(model = product.imageUri, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                                    } else {
+                                        Icon(Icons.Default.Image, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+                                    }
+                                }
+                                Column(modifier = Modifier.padding(8.dp)) {
+                                    Text(text = product.name, fontWeight = FontWeight.Bold, maxLines = 1, fontSize = 14.sp)
+                                    Text(text = product.price, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                }
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            // Service Posts Section
+            if (myPosts.isNotEmpty()) {
+                Text(
+                    text = "Service Updates & Posts",
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    myPosts.forEach { post ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.Schedule, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Gray)
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(text = post.time, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)
+                                        Text(text = post.location, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(text = post.description, style = MaterialTheme.typography.bodyMedium)
+                                if (post.imageUri != null) {
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    AsyncImage(
+                                        model = post.imageUri,
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxWidth().height(150.dp).clip(RoundedCornerShape(8.dp)),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -163,16 +247,15 @@ fun SellerProfileScreen(
             // Booking Button
             Button(
                 onClick = { 
-                    // When booked, the provider receives a notification with user details from the ViewModel
                     val newNotification = ServiceRequest(
                         id = System.currentTimeMillis().toString(),
                         userName = profileViewModel.name.value,
                         serviceType = category,
-                        description = "New Booking: User is at ${profileViewModel.location.value}. Reach them at ${profileViewModel.contact.value}",
+                        description = "New Booking Request",
                         time = "Just now"
                     )
                     profileViewModel.addServiceRequest(newNotification)
-                    Toast.makeText(context, "Booking Sent to $sellerName!", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "Booking Sent to $displayName!", Toast.LENGTH_LONG).show()
                 },
                 modifier = Modifier
                     .fillMaxWidth()

@@ -1,5 +1,7 @@
 package com.example.handygo.userscreens
 
+import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -7,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -14,14 +17,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.handygo.AuthViewModel
+import com.example.handygo.navigation.ROUTE_LOGIN
 import com.example.handygo.navigation.ROUTE_USER_HOME
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterUserScreen(navController: NavHostController) {
+    val context = LocalContext.current
+    val authViewModel = AuthViewModel(navController, context)
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+
+    var emailError by remember { mutableStateOf(false) }
+
+    fun isValidEmail(target: CharSequence): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(target).matches()
+    }
 
     Box(
         modifier = Modifier
@@ -63,10 +76,19 @@ fun RegisterUserScreen(navController: NavHostController) {
 
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = {
+                        email = it
+                        emailError = false
+                    },
                     label = { Text("Email Address") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
+                    isError = emailError,
+                    supportingText = {
+                        if (emailError) {
+                            Text(text = "Please enter a valid email address", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -106,7 +128,7 @@ fun RegisterUserScreen(navController: NavHostController) {
 
                 Button(
                     onClick = {
-                        navController.navigate(ROUTE_USER_HOME)
+                        authViewModel.registerUser(email, password, confirmPassword)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -121,6 +143,15 @@ fun RegisterUserScreen(navController: NavHostController) {
                         text = "REGISTER",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
+                    Text(
+                        text = "Already have an account? Login",
+                        color = MaterialTheme.colorScheme.secondary
                     )
                 }
             }

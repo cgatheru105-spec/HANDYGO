@@ -1,5 +1,8 @@
 package com.example.handygo.userscreens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -26,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.handygo.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,6 +42,14 @@ fun UserProfileScreen(
     var name by remember { mutableStateOf(profileViewModel.name.value) }
     var contact by remember { mutableStateOf(profileViewModel.contact.value) }
     var location by remember { mutableStateOf(profileViewModel.location.value) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            profileViewModel.profileImageUri.value = uri.toString()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -71,7 +84,9 @@ fun UserProfileScreen(
             // Profile Picture Section
             Box(
                 contentAlignment = Alignment.BottomEnd,
-                modifier = Modifier.size(120.dp)
+                modifier = Modifier
+                    .size(120.dp)
+                    .clickable { launcher.launch("image/*") }
             ) {
                 Box(
                     modifier = Modifier
@@ -80,20 +95,28 @@ fun UserProfileScreen(
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(60.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    if (profileViewModel.profileImageUri.value != null) {
+                        AsyncImage(
+                            model = profileViewModel.profileImageUri.value,
+                            contentDescription = "Profile Picture",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = null,
+                            modifier = Modifier.size(60.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
                 
                 // Edit Icon Overlay
                 Surface(
                     modifier = Modifier
                         .size(36.dp)
-                        .clip(CircleShape)
-                        .clickable { /* Handle image pick */ },
+                        .clip(CircleShape),
                     color = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ) {

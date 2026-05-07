@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,9 +29,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.handygo.ProfileViewModel
+import com.example.handygo.navigation.ROUTE_LOCATION
 import com.example.handygo.navigation.ROUTE_REGISTER_PROVIDER
 import com.example.handygo.ui.theme.HANDYGOTheme
+import androidx.compose.material.icons.filled.Map
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,6 +47,11 @@ fun BasicDetailsScreen(
     var location by remember { mutableStateOf(profileViewModel.location.value) }
     var bio by remember { mutableStateOf(profileViewModel.bio.value) }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
+
+    // Sync location from ViewModel if it changes (e.g. from Map screen)
+    LaunchedEffect(profileViewModel.location.value) {
+        location = profileViewModel.location.value
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -95,12 +104,13 @@ fun BasicDetailsScreen(
                     .clickable { launcher.launch("image/*") },
                 contentAlignment = Alignment.Center
             ) {
-                if (imageUri != null || profileViewModel.profileImageUri.value != null) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "Selected",
-                        modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.primary
+                val currentImageUri = imageUri?.toString() ?: profileViewModel.profileImageUri.value
+                if (currentImageUri != null) {
+                    AsyncImage(
+                        model = currentImageUri,
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
                     )
                 } else {
                     Icon(
@@ -161,6 +171,11 @@ fun BasicDetailsScreen(
                 placeholder = { Text("City, Area") },
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
+                trailingIcon = {
+                    IconButton(onClick = { navController.navigate(ROUTE_LOCATION) }) {
+                        Icon(Icons.Default.Map, contentDescription = "Pick on map", tint = MaterialTheme.colorScheme.primary)
+                    }
+                },
                 singleLine = true,
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(

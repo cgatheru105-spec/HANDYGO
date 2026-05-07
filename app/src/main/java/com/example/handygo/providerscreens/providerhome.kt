@@ -1,5 +1,8 @@
 package com.example.handygo.providerscreens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -26,7 +30,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.handygo.ProfileViewModel
+import com.example.handygo.ProviderPost
 import com.example.handygo.R
 import com.example.handygo.navigation.ROUTE_PROVIDER_DASHBOARD
 import com.example.handygo.navigation.ROUTE_PROVIDER_HOME
@@ -41,7 +47,8 @@ data class MarketProduct(
     val price: String,
     val location: String,
     val sellerName: String,
-    val imageRes: Int? = null
+    val imageRes: Int? = null,
+    val imageUri: String? = null
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,7 +58,9 @@ fun ProviderHomeScreen(
     profileViewModel: ProfileViewModel = viewModel()
 ) {
     val marketplaceProducts = profileViewModel.marketplaceProducts
+    val providerPosts = profileViewModel.providerPosts
     var showPostDialog by remember { mutableStateOf(false) }
+    var showServiceDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -62,6 +71,13 @@ fun ProviderHomeScreen(
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 actions = {
+                    IconButton(onClick = { showServiceDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.AddComment,
+                            contentDescription = "Post Service",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                     IconButton(onClick = { showPostDialog = true }) {
                         Icon(
                             imageVector = Icons.Default.PostAdd,
@@ -203,6 +219,97 @@ fun ProviderHomeScreen(
             }
         )
     }
+    if (showServiceDialog) {
+        PostServiceDialog(
+            onDismiss = { showServiceDialog = false },
+            onPost = { newPost ->
+                profileViewModel.addPost(newPost)
+                showServiceDialog = false
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PostServiceDialog(onDismiss: () -> Unit, onPost: (ProviderPost) -> Unit) {
+    var description by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf("") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri = uri
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Post Service / Update", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = description, 
+                    onValueChange = { description = it }, 
+                    label = { Text("What are you offering?") },
+                    modifier = Modifier.fillMaxWidth().height(100.dp)
+                )
+                OutlinedTextField(
+                    value = location, 
+                    onValueChange = { location = it }, 
+                    label = { Text("Location") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable { galleryLauncher.launch("image/*") },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (selectedImageUri != null) {
+                        AsyncImage(
+                            model = selectedImageUri,
+                            contentDescription = "Selected Image",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.AddPhotoAlternate, contentDescription = null)
+                            Text("Add Service Photo (Optional)", fontSize = 12.sp)
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (description.isNotBlank()) {
+                        onPost(ProviderPost(
+                            id = System.currentTimeMillis().toString(),
+                            description = description,
+                            location = location,
+                            time = "Just now",
+                            imageUri = selectedImageUri?.toString()
+                        ))
+                    }
+                },
+                enabled = description.isNotBlank()
+            ) {
+                Text("Post")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
 }
 
 @Composable
@@ -228,7 +335,14 @@ fun MarketProductCard(product: MarketProduct, onClick: () -> Unit) {
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                if (product.imageRes != null) {
+                if (product.imageUri != null) {
+                    AsyncImage(
+                        model = product.imageUri,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else if (product.imageRes != null) {
                     Image(
                         painter = painterResource(id = product.imageRes),
                         contentDescription = null,
@@ -299,6 +413,13 @@ fun PostProductDialog(onDismiss: () -> Unit, onPost: (MarketProduct) -> Unit) {
     var description by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri = uri
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -310,14 +431,30 @@ fun PostProductDialog(onDismiss: () -> Unit, onPost: (MarketProduct) -> Unit) {
                 OutlinedTextField(value = price, onValueChange = { price = it }, label = { Text("Price (e.g. Ksh 500)") })
                 OutlinedTextField(value = location, onValueChange = { location = it }, label = { Text("Location") })
                 
-                Button(
-                    onClick = { /* Image Picker Logic */ },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable { galleryLauncher.launch("image/*") },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.CameraAlt, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Add Picture")
+                    if (selectedImageUri != null) {
+                        AsyncImage(
+                            model = selectedImageUri,
+                            contentDescription = "Selected Image",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.CameraAlt, contentDescription = null)
+                            Text("Add Product Photo", fontSize = 12.sp)
+                        }
+                    }
                 }
             }
         },
@@ -331,7 +468,8 @@ fun PostProductDialog(onDismiss: () -> Unit, onPost: (MarketProduct) -> Unit) {
                             description = description,
                             price = price,
                             location = location,
-                            sellerName = "You"
+                            sellerName = "You",
+                            imageUri = selectedImageUri?.toString()
                         ))
                     }
                 },

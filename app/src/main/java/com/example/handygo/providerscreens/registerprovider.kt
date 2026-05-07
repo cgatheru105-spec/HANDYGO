@@ -1,5 +1,7 @@
 package com.example.handygo.providerscreens
 
+import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -7,21 +9,37 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.handygo.AuthViewModel
+import com.example.handygo.ProfileViewModel
+import com.example.handygo.navigation.ROUTE_LOGIN
 import com.example.handygo.navigation.ROUTE_PROVIDER_HOME
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterProviderScreen(navController: NavHostController) {
+fun RegisterProviderScreen(
+    navController: NavHostController,
+    profileViewModel: ProfileViewModel = viewModel()
+) {
+    val context = LocalContext.current
+    val authViewModel = AuthViewModel(navController, context)
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+
+    var emailError by remember { mutableStateOf(false) }
+
+    fun isValidEmail(target: CharSequence): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(target).matches()
+    }
 
     Box(
         modifier = Modifier
@@ -63,10 +81,19 @@ fun RegisterProviderScreen(navController: NavHostController) {
 
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = {
+                        email = it
+                        emailError = false
+                    },
                     label = { Text("Email Address") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
+                    isError = emailError,
+                    supportingText = {
+                        if (emailError) {
+                            Text(text = "Please enter a valid email address", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -106,7 +133,18 @@ fun RegisterProviderScreen(navController: NavHostController) {
 
                 Button(
                     onClick = {
-                        navController.navigate(ROUTE_PROVIDER_HOME)
+                        authViewModel.registerProvider(
+                            email = email,
+                            pass = password,
+                            confpass = confirmPassword,
+                            name = profileViewModel.name.value,
+                            contact = profileViewModel.contact.value,
+                            location = profileViewModel.location.value,
+                            latitude = profileViewModel.latitude.value,
+                            longitude = profileViewModel.longitude.value,
+                            bio = profileViewModel.bio.value,
+                            profileImage = profileViewModel.profileImageUri.value
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -121,6 +159,15 @@ fun RegisterProviderScreen(navController: NavHostController) {
                         "Complete Registration",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
+                    Text(
+                        text = "Already have an account? Login",
+                        color = MaterialTheme.colorScheme.secondary
                     )
                 }
             }
