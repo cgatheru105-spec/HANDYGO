@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "655296017702",
+    "firebase_url": "https://handygo-ebe93-default-rtdb.firebaseio.com",
+    "project_id": "handygo-ebe93",
+    "storage_bucket": "handygo-ebe93.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:655296017702:android:c7dd664b054fdddd7f3de7",
+        "android_client_info": {
+          "package_name": "com.example.handygo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB60OvG785uGbW5f2uC6aAroRyCLLGlTo0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

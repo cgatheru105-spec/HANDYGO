@@ -1,0 +1,17 @@
+package com.example.handygo.navigation
+
+const val ROUTE_SPLASH = "splash"
+const val ROUTE_START = "start"
+const val ROUTE_LOGIN = "login"
+const val ROUTE_REGISTER_USER = "register_user"
+const val ROUTE_REGISTER_PROVIDER = "register_provider"
+const val ROUTE_USER_HOME = "user_home"
+const val ROUTE_PROVIDER_HOME = "provider_home"
+const val ROUTE_USER_PROFILE = "user_profile"
+const val ROUTE_PROVIDER_DASHBOARD = "provider_dashboard"
+const val ROUTE_ADD_SERVICES = "add_services"
+const val ROUTE_LOCATION = "location"
+const val ROUTE_BASIC_DETAILS = "basic_details"
+const val ROUTE_SETTINGS = "settings"
+const val ROUTE_SELLER_PROFILE = "seller_profile"
+const val ROUTE_SEARCH = "search"
