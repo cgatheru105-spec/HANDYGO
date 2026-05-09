@@ -33,14 +33,16 @@ import com.example.handygo.navigation.ROUTE_PROVIDER_HOME
 import com.example.handygo.navigation.ROUTE_SELLER_PROFILE
 import com.example.handygo.navigation.ROUTE_SETTINGS
 import com.example.handygo.navigation.ROUTE_USER_PROFILE
+import com.google.firebase.auth.FirebaseAuth
 
 data class MarketProduct(
-    val id: String,
-    val name: String,
-    val description: String,
-    val price: String,
-    val location: String,
-    val sellerName: String,
+    val id: String = "",
+    val name: String = "",
+    val description: String = "",
+    val price: String = "",
+    val location: String = "",
+    val sellerName: String = "",
+    val sellerId: String = "",
     val imageRes: Int? = null
 )
 
@@ -51,6 +53,7 @@ fun ProviderHomeScreen(
     profileViewModel: ProfileViewModel = viewModel()
 ) {
     val marketplaceProducts = profileViewModel.marketplaceProducts
+    val requestsCount = profileViewModel.serviceRequests.size
     var showPostDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -80,33 +83,33 @@ fun ProviderHomeScreen(
             )
         },
         bottomBar = {
-            BottomAppBar(
+            NavigationBar(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
                 NavigationBarItem(
                     selected = true,
                     onClick = { /* Already on Home */ },
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home") }
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.White) },
+                    label = { Text("Home", color = Color.White) }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { /* Navigate to Search */ },
-                    icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-                    label = { Text("Search") }
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.White.copy(0.7f)) },
+                    label = { Text("Search", color = Color.White.copy(0.7f)) }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { navHostController.navigate(ROUTE_USER_PROFILE) },
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-                    label = { Text("Profile") }
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile", tint = Color.White.copy(0.7f)) },
+                    label = { Text("Profile", color = Color.White.copy(0.7f)) }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { navHostController.navigate(ROUTE_SETTINGS) },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                    label = { Text("Settings") }
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings", tint = Color.White.copy(0.7f)) },
+                    label = { Text("Settings", color = Color.White.copy(0.7f)) }
                 )
             }
         },
@@ -151,7 +154,7 @@ fun ProviderHomeScreen(
                     StatCard(
                         modifier = Modifier.weight(1f),
                         title = "Requests",
-                        value = "5",
+                        value = requestsCount.toString(),
                         icon = Icons.Default.NotificationsActive,
                         iconColor = MaterialTheme.colorScheme.primary,
                         onClick = { navHostController.navigate(ROUTE_PROVIDER_DASHBOARD) }
@@ -184,6 +187,11 @@ fun ProviderHomeScreen(
 
             items(marketplaceProducts) { product ->
                 MarketProductCard(product) {
+                    profileViewModel.selectedSellerName.value = product.sellerName
+                    profileViewModel.selectedSellerCategory.value = product.name
+                    profileViewModel.selectedSellerPrice.value = product.price
+                    profileViewModel.selectedSellerLocation.value = product.location
+                    profileViewModel.selectedSellerId.value = product.sellerId
                     navHostController.navigate(ROUTE_SELLER_PROFILE)
                 }
             }
@@ -299,6 +307,7 @@ fun PostProductDialog(onDismiss: () -> Unit, onPost: (MarketProduct) -> Unit) {
     var description by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
+    val auth = FirebaseAuth.getInstance()
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -331,7 +340,8 @@ fun PostProductDialog(onDismiss: () -> Unit, onPost: (MarketProduct) -> Unit) {
                             description = description,
                             price = price,
                             location = location,
-                            sellerName = "You"
+                            sellerName = "You",
+                            sellerId = auth.currentUser?.uid ?: ""
                         ))
                     }
                 },

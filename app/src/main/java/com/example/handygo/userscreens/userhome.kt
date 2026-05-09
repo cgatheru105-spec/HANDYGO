@@ -37,7 +37,7 @@ import com.example.handygo.providerscreens.MarketProduct
 import com.example.handygo.ui.theme.HANDYGOTheme
 
 data class Category(val name: String, val icon: ImageVector)
-data class FeaturedService(val id: String, val name: String, val provider: String, val price: String, val rating: Double)
+data class FeaturedService(val id: String, val name: String, val provider: String, val price: String, val rating: Double, val providerId: String = "")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +46,7 @@ fun UserHomeScreen(
     profileViewModel: ProfileViewModel = viewModel()
 ) {
     val marketplaceProducts = profileViewModel.marketplaceProducts
+    val providers = profileViewModel.allProviders
     
     val categories = listOf(
         Category("Plumbing", Icons.Default.Build),
@@ -54,12 +55,6 @@ fun UserHomeScreen(
         Category("Carpentry", Icons.Default.Home),
         Category("Painting", Icons.Default.Edit),
         Category("Gardening", Icons.Default.AccountBox)
-    )
-
-    val featuredServices = listOf(
-        FeaturedService("1", "House Deep Cleaning", "Grace Wambui", "Ksh 2,500", 4.8),
-        FeaturedService("2", "Sink Repair", "John Maina", "Ksh 1,200", 4.9),
-        FeaturedService("3", "Full House Painting", "David Otieno", "Ksh 15,000", 4.7)
     )
 
     Scaffold(
@@ -154,7 +149,7 @@ fun UserHomeScreen(
                 }
             }
 
-            // Featured Services
+            // Featured Providers
             item {
                 Row(
                     modifier = Modifier
@@ -164,7 +159,7 @@ fun UserHomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Featured Services",
+                        text = "Professional Providers",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -177,9 +172,38 @@ fun UserHomeScreen(
                 }
             }
 
-            items(featuredServices) { service ->
-                FeaturedServiceCard(service) {
-                    navHostController.navigate(ROUTE_SELLER_PROFILE)
+            if (providers.isEmpty()) {
+                item {
+                    Text(
+                        "No providers joined yet.",
+                        modifier = Modifier.padding(16.dp),
+                        color = Color.Gray
+                    )
+                }
+            } else {
+                items(providers.take(5)) { providerData ->
+                    val name = providerData["name"] as? String ?: "Unknown"
+                    val category = providerData["category"] as? String ?: "Service Provider"
+                    val id = providerData["id"] as? String ?: ""
+                    val location = providerData["location"] as? String ?: "Nairobi"
+                    
+                    FeaturedServiceCard(
+                        FeaturedService(
+                            id = id,
+                            name = category,
+                            provider = name,
+                            price = "Negotiable",
+                            rating = 4.8,
+                            providerId = id
+                        )
+                    ) {
+                        profileViewModel.selectedSellerName.value = name
+                        profileViewModel.selectedSellerCategory.value = category
+                        profileViewModel.selectedSellerPrice.value = "Negotiable"
+                        profileViewModel.selectedSellerLocation.value = location
+                        profileViewModel.selectedSellerId.value = id
+                        navHostController.navigate(ROUTE_SELLER_PROFILE)
+                    }
                 }
             }
 
@@ -195,6 +219,11 @@ fun UserHomeScreen(
 
             items(marketplaceProducts) { product ->
                 UserMarketProductCard(product) {
+                    profileViewModel.selectedSellerName.value = product.sellerName
+                    profileViewModel.selectedSellerCategory.value = product.name
+                    profileViewModel.selectedSellerPrice.value = product.price
+                    profileViewModel.selectedSellerLocation.value = product.location
+                    profileViewModel.selectedSellerId.value = product.sellerId
                     navHostController.navigate(ROUTE_SELLER_PROFILE)
                 }
             }

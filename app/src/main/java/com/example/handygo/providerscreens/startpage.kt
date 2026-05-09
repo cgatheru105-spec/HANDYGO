@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.handygo.navigation.ROUTE_ADD_SERVICES
+import com.example.handygo.navigation.ROUTE_LOGIN
 import com.example.handygo.navigation.ROUTE_REGISTER_USER
 
 @Composable
@@ -67,6 +68,17 @@ fun StartScreen(navController: NavHostController) {
                 onClick = {
                     navController.navigate(ROUTE_ADD_SERVICES)
                 }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
+            Text(
+                text = "Already have an account? Login here",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.secondary
             )
         }
     }

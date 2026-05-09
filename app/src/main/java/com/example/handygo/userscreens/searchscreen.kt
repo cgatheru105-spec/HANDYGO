@@ -1,6 +1,7 @@
 package com.example.handygo.userscreens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,37 +19,31 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.handygo.ProfileViewModel
+import com.example.handygo.navigation.ROUTE_SELLER_PROFILE
 import com.example.handygo.ui.theme.HANDYGOTheme
-
-data class Provider(
-    val id: String,
-    val name: String,
-    val category: String,
-    val rating: Double,
-    val location: String,
-    val distance: String
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(navController: NavHostController) {
+fun SearchScreen(
+    navController: NavHostController,
+    profileViewModel: ProfileViewModel = viewModel()
+) {
     var searchQuery by remember { mutableStateOf("") }
     
-    val allProviders = listOf(
-        Provider("1", "John Maina", "Plumber", 4.8, "Westlands, Nairobi", "2.5 km away"),
-        Provider("2", "Sarah Njeri", "Electrician", 4.9, "Kilimani, Nairobi", "1.2 km away"),
-        Provider("3", "David Otieno", "Carpenter", 4.7, "Pangani, Nairobi", "4.0 km away"),
-        Provider("4", "Grace Wambui", "Cleaner", 4.6, "Nairobi CBD", "0.8 km away"),
-        Provider("5", "Peter Kamau", "Mechanic", 4.9, "Thika Road", "5.5 km away"),
-        Provider("6", "Alice Atieno", "Tailor", 4.5, "Donholm, Nairobi", "3.2 km away")
-    )
+    val providers = profileViewModel.allProviders
 
-    val filteredProviders = allProviders.filter {
-        it.name.contains(searchQuery, ignoreCase = true) || 
-        it.category.contains(searchQuery, ignoreCase = true) ||
-        it.location.contains(searchQuery, ignoreCase = true)
+    val filteredProviders = providers.filter {
+        val name = it["name"] as? String ?: ""
+        val category = it["category"] as? String ?: ""
+        val location = it["location"] as? String ?: ""
+        
+        name.contains(searchQuery, ignoreCase = true) || 
+        category.contains(searchQuery, ignoreCase = true) ||
+        location.contains(searchQuery, ignoreCase = true)
     }
 
     Scaffold(
@@ -104,8 +99,18 @@ fun SearchScreen(navController: NavHostController) {
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(filteredProviders) { provider ->
-                    ProviderCard(provider = provider)
+                items(filteredProviders) { providerData ->
+                    ProviderCard(
+                        providerData = providerData,
+                        onClick = {
+                            profileViewModel.selectedSellerName.value = providerData["name"] as? String ?: ""
+                            profileViewModel.selectedSellerCategory.value = providerData["category"] as? String ?: ""
+                            profileViewModel.selectedSellerLocation.value = providerData["location"] as? String ?: ""
+                            profileViewModel.selectedSellerPrice.value = "Ksh 500" // Default or fetched from data
+                            profileViewModel.selectedSellerId.value = providerData["id"] as? String ?: ""
+                            navController.navigate(ROUTE_SELLER_PROFILE)
+                        }
+                    )
                 }
                 
                 if (filteredProviders.isEmpty()) {
@@ -121,9 +126,15 @@ fun SearchScreen(navController: NavHostController) {
 }
 
 @Composable
-fun ProviderCard(provider: Provider) {
+fun ProviderCard(providerData: Map<String, Any>, onClick: () -> Unit) {
+    val name = providerData["name"] as? String ?: "Unknown"
+    val category = providerData["category"] as? String ?: "Service Provider"
+    val location = providerData["location"] as? String ?: "Location Unknown"
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -142,7 +153,7 @@ fun ProviderCard(provider: Provider) {
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
-                        text = provider.name.first().toString(),
+                        text = name.first().toString(),
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
@@ -159,7 +170,7 @@ fun ProviderCard(provider: Provider) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = provider.name,
+                        text = name,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -172,7 +183,7 @@ fun ProviderCard(provider: Provider) {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = provider.rating.toString(),
+                            text = "4.8", // Default rating
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.Bold
                         )
@@ -180,7 +191,7 @@ fun ProviderCard(provider: Provider) {
                 }
                 
                 Text(
-                    text = provider.category,
+                    text = category,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight.Medium
@@ -197,18 +208,11 @@ fun ProviderCard(provider: Provider) {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = provider.location,
+                        text = location,
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
                     )
                 }
-                
-                Text(
-                    text = provider.distance,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
             }
         }
     }

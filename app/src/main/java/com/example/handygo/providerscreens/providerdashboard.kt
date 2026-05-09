@@ -22,11 +22,11 @@ import androidx.navigation.compose.rememberNavController
 import com.example.handygo.ProfileViewModel
 
 data class ServiceRequest(
-    val id: String,
-    val userName: String,
-    val serviceType: String,
-    val description: String,
-    val time: String
+    val id: String = "",
+    val userName: String = "",
+    val serviceType: String = "",
+    val description: String = "",
+    val time: String = ""
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,7 +78,10 @@ fun ProviderDashboardScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(requests) { request ->
-                        ServiceRequestCard(request)
+                        ServiceRequestCard(request, 
+                            onAccept = { profileViewModel.removeServiceRequest(request.id) },
+                            onDecline = { profileViewModel.removeServiceRequest(request.id) }
+                        )
                     }
                 }
             }
@@ -87,7 +90,11 @@ fun ProviderDashboardScreen(
 }
 
 @Composable
-fun ServiceRequestCard(request: ServiceRequest) {
+fun ServiceRequestCard(
+    request: ServiceRequest,
+    onAccept: () -> Unit,
+    onDecline: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(4.dp),
@@ -147,7 +154,7 @@ fun ServiceRequestCard(request: ServiceRequest) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedButton(
-                    onClick = { /* Decline logic */ },
+                    onClick = onDecline,
                     modifier = Modifier.padding(end = 8.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.error
@@ -157,7 +164,7 @@ fun ServiceRequestCard(request: ServiceRequest) {
                     Text("Decline")
                 }
                 Button(
-                    onClick = { /* Accept logic */ },
+                    onClick = onAccept,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary

@@ -23,18 +23,19 @@ fun AppNavHost(
         navController = navController,
         startDestination = startDestination
     ) {
-        composable(ROUTE_SPLASH) { Splashscreen(navController) }
+        composable(ROUTE_SPLASH) { Splashscreen(navController, profileViewModel) }
         composable(ROUTE_START) { StartScreen(navController) }
         composable(ROUTE_LOGIN) { LoginScreen(navController) }
-        composable(ROUTE_REGISTER_USER) { RegisterUserScreen(navController) }
-        composable(ROUTE_REGISTER_PROVIDER) { RegisterProviderScreen(navController) }
-        composable(ROUTE_USER_HOME) { UserHomeScreen(navController) }
+        composable(ROUTE_REGISTER_USER) { RegisterUserScreen(navController, profileViewModel) }
+        composable(ROUTE_REGISTER_PROVIDER) { RegisterProviderScreen(navController, profileViewModel) }
+        composable(ROUTE_USER_HOME) { UserHomeScreen(navController, profileViewModel) }
         composable(ROUTE_PROVIDER_HOME) { ProviderHomeScreen(navController, profileViewModel) }
         composable(ROUTE_USER_PROFILE) { UserProfileScreen(navController, profileViewModel) }
-        composable(ROUTE_ADD_SERVICES) { ServicesScreen(navController) }
+        composable(ROUTE_ADD_SERVICES) { ServicesScreen(navController, profileViewModel) }
         composable(ROUTE_BASIC_DETAILS) { BasicDetailsScreen(navController, profileViewModel) }
-        composable(ROUTE_PROVIDER_DASHBOARD) { ProviderDashboardScreen(navController) }
-        composable(ROUTE_SELLER_PROFILE) { SellerProfileScreen(navController) }
+        composable(ROUTE_LOCATION) { LocationScreen(navController) }
+        composable(ROUTE_PROVIDER_DASHBOARD) { ProviderDashboardScreen(navController, profileViewModel) }
+        composable(ROUTE_SELLER_PROFILE) { SellerProfileScreen(navController, profileViewModel) }
         composable(ROUTE_SETTINGS) { 
             SettingsScreen(
                 navController = navController, 
@@ -42,6 +43,6 @@ fun AppNavHost(
                 onThemeChange = onThemeChange
             ) 
         }
-        composable(ROUTE_SEARCH) { SearchScreen(navController) }
+        composable(ROUTE_SEARCH) { SearchScreen(navController, profileViewModel) }
     }
 }

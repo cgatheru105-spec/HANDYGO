@@ -7,21 +7,29 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.handygo.navigation.ROUTE_USER_HOME
+import com.example.handygo.AuthViewModel
+import com.example.handygo.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterUserScreen(navController: NavHostController) {
+fun RegisterUserScreen(
+    navController: NavHostController,
+    profileViewModel: ProfileViewModel = viewModel()
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val authViewModel = remember { AuthViewModel(navController, context) }
 
     Box(
         modifier = Modifier
@@ -106,7 +114,7 @@ fun RegisterUserScreen(navController: NavHostController) {
 
                 Button(
                     onClick = {
-                        navController.navigate(ROUTE_USER_HOME)
+                        authViewModel.register(email, password, confirmPassword, "user")
                     },
                     modifier = Modifier
                         .fillMaxWidth()

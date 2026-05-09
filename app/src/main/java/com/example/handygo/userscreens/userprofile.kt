@@ -1,5 +1,6 @@
 package com.example.handygo.userscreens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,7 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,6 +38,7 @@ fun UserProfileScreen(
     var name by remember { mutableStateOf(profileViewModel.name.value) }
     var contact by remember { mutableStateOf(profileViewModel.contact.value) }
     var location by remember { mutableStateOf(profileViewModel.location.value) }
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -68,7 +70,6 @@ fun UserProfileScreen(
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Profile Picture Section
             Box(
                 contentAlignment = Alignment.BottomEnd,
                 modifier = Modifier.size(120.dp)
@@ -88,7 +89,6 @@ fun UserProfileScreen(
                     )
                 }
                 
-                // Edit Icon Overlay
                 Surface(
                     modifier = Modifier
                         .size(36.dp)
@@ -107,7 +107,6 @@ fun UserProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Input Fields
             Text(
                 text = "Personal Information",
                 modifier = Modifier.fillMaxWidth(),
@@ -173,7 +172,11 @@ fun UserProfileScreen(
             // Save Button
             Button(
                 onClick = { 
-                    profileViewModel.updateProfile(name, contact, location, profileViewModel.bio.value)
+                    profileViewModel.updateProfile(
+                        name, contact, location, profileViewModel.bio.value,
+                        newCategory = profileViewModel.myCategory.value
+                    )
+                    Toast.makeText(context, "Profile Updated", Toast.LENGTH_SHORT).show()
                 },
                 modifier = Modifier
                     .fillMaxWidth()

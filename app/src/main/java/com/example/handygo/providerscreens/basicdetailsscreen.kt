@@ -6,9 +6,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.LocationOn
@@ -42,7 +44,11 @@ fun BasicDetailsScreen(
     var contact by remember { mutableStateOf(profileViewModel.contact.value) }
     var location by remember { mutableStateOf(profileViewModel.location.value) }
     var bio by remember { mutableStateOf(profileViewModel.bio.value) }
+    var category by remember { mutableStateOf(profileViewModel.myCategory.value) }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
+    
+    val categories = listOf("Plumbing", "Electrical", "Cleaning", "Carpentry", "Painting", "Gardening", "Other")
+    var expanded by remember { mutableStateOf(false) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -69,6 +75,7 @@ fun BasicDetailsScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -84,7 +91,7 @@ fun BasicDetailsScreen(
                 text = "This information will be visible to potential customers.",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                modifier = Modifier.align(Alignment.Start).padding(bottom = 32.dp)
+                modifier = Modifier.align(Alignment.Start).padding(bottom = 24.dp)
             )
 
             Box(
@@ -133,6 +140,42 @@ fun BasicDetailsScreen(
                     focusedLabelColor = MaterialTheme.colorScheme.primary
                 )
             )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = category,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Service Category") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    categories.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            text = { Text(selectionOption) },
+                            onClick = {
+                                category = selectionOption
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -187,11 +230,17 @@ fun BasicDetailsScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(32.dp))
 
             Button(
                 onClick = { 
-                    profileViewModel.updateProfile(name, contact, location, bio)
+                    // Store data locally in ViewModel first
+                    profileViewModel.name.value = name
+                    profileViewModel.contact.value = contact
+                    profileViewModel.location.value = location
+                    profileViewModel.bio.value = bio
+                    profileViewModel.myCategory.value = category
+
                     navController.navigate(ROUTE_REGISTER_PROVIDER)
                 },
                 modifier = Modifier
@@ -202,7 +251,7 @@ fun BasicDetailsScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 shape = RoundedCornerShape(8.dp),
-                enabled = name.isNotBlank() && contact.isNotBlank() && location.isNotBlank() && bio.isNotBlank()
+                enabled = name.isNotBlank() && contact.isNotBlank() && location.isNotBlank() && bio.isNotBlank() && category.isNotBlank()
             ) {
                 Text("Save & Continue", fontSize = 18.sp)
             }

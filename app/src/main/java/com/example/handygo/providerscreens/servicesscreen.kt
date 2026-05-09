@@ -18,8 +18,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.handygo.ProfileViewModel
 import com.example.handygo.navigation.ROUTE_BASIC_DETAILS
 
 data class ServiceOption(
@@ -29,14 +31,17 @@ data class ServiceOption(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ServicesScreen(navController: NavHostController) {
+fun ServicesScreen(
+    navController: NavHostController,
+    profileViewModel: ProfileViewModel = viewModel()
+) {
     val services = listOf(
-        ServiceOption("1", "Plumber"),
-        ServiceOption("2", "Electrician"),
+        ServiceOption("1", "Plumbing"),
+        ServiceOption("2", "Electrical"),
         ServiceOption("3", "Barber"),
-        ServiceOption("4", "Carpenter"),
-        ServiceOption("5", "Painter"),
-        ServiceOption("6", "Cleaner"),
+        ServiceOption("4", "Carpentry"),
+        ServiceOption("5", "Painting"),
+        ServiceOption("6", "Cleaning"),
         ServiceOption("7", "Mechanic"),
         ServiceOption("8", "Mason"),
         ServiceOption("9", "Gardener"),
@@ -57,7 +62,12 @@ fun ServicesScreen(navController: NavHostController) {
         },
         bottomBar = {
             Button(
-                onClick = { navController.navigate(ROUTE_BASIC_DETAILS) },
+                onClick = { 
+                    // Save the first selected service as the primary category
+                    val firstSelected = services.find { selectedServices.contains(it.id) }?.name ?: "General"
+                    profileViewModel.myCategory.value = firstSelected
+                    navController.navigate(ROUTE_BASIC_DETAILS) 
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)

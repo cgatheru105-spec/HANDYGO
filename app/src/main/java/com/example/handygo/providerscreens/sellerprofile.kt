@@ -34,117 +34,116 @@ import com.example.handygo.ProfileViewModel
 @Composable
 fun SellerProfileScreen(
     navController: NavHostController, 
-    profileViewModel: ProfileViewModel = viewModel(),
-    sellerName: String = "John Maina",
-    category: String = "Professional Plumber",
-    location: String = "Westlands, Nairobi",
-    cost: String = "Ksh 1,200 - 3,000 per task"
+    profileViewModel: ProfileViewModel = viewModel()
 ) {
+    // Extract dynamic data from the shared ViewModel
+    val sellerName = profileViewModel.selectedSellerName.value.ifBlank { "Provider Name" }
+    val category = profileViewModel.selectedSellerCategory.value.ifBlank { "Service Provider" }
+    val location = profileViewModel.selectedSellerLocation.value.ifBlank { "Location Unknown" }
+    val cost = profileViewModel.selectedSellerPrice.value.ifBlank { "Negotiable" }
+
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Provider Details", fontWeight = FontWeight.Bold) },
+                title = { Text("Provider Profile", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { /* Share Logic */ }) {
+                        Icon(Icons.Default.Share, contentDescription = "Share")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White,
+                    actionIconContentColor = Color.White
                 )
             )
         }
-    ) { innerPadding ->
+    ) { paddingValues ->
         Column(
             modifier = Modifier
+                .padding(paddingValues)
                 .fillMaxSize()
-                .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(scrollState)
-                .padding(24.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Profile Image
-            Surface(
-                modifier = Modifier.size(100.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = sellerName.first().toString(),
-                        style = MaterialTheme.typography.displayMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier.size(80.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = sellerName,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            
-            Text(
-                text = category,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.secondary,
-                fontWeight = FontWeight.Medium
-            )
-
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
-                Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFB300), modifier = Modifier.size(18.dp))
-                Text(text = " 4.8 (150 reviews)", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+            // Name and Rating
+            Text(text = sellerName, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFB300), modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = "4.8 (120 reviews)", fontSize = 14.sp, color = Color.Gray)
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Contact and Location Information
+            // Details Section
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(2.dp)
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
             ) {
-                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    InfoRow(icon = Icons.Default.LocationOn, label = "Base Location", value = location)
-                    InfoRow(icon = Icons.Default.Payments, label = "Service Cost", value = cost)
-                    InfoRow(icon = Icons.Default.Phone, label = "Contact number", value = "+254 700 123 456")
+                Column(modifier = Modifier.padding(16.dp)) {
+                    DetailRow(icon = Icons.Default.Build, label = "Service", value = category)
+                    DetailRow(icon = Icons.Default.LocationOn, label = "Location", value = location)
+                    DetailRow(icon = Icons.Default.AttachMoney, label = "Starting Price", value = cost)
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Gallery / Photos Section
-            Text(
-                text = "Past Work Samples",
-                modifier = Modifier.fillMaxWidth(),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            
+            // Bio Section
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text("About Me", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Professional $category with over 5 years of experience. I guarantee quality work and timely delivery. Feel free to book my services.",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Work Portfolio
+            Text("Recent Work", fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.align(Alignment.Start))
             Spacer(modifier = Modifier.height(12.dp))
-            
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
+                contentPadding = PaddingValues(horizontal = 4.dp)
             ) {
-                // Mock gallery
                 items(5) { index ->
                     Box(
                         modifier = Modifier
-                            .size(160.dp, 110.dp)
-                            .clip(RoundedCornerShape(12.dp))
+                            .size(100.dp)
+                            .clip(RoundedCornerShape(8.dp))
                             .background(MaterialTheme.colorScheme.secondaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
@@ -163,7 +162,6 @@ fun SellerProfileScreen(
             // Booking Button
             Button(
                 onClick = { 
-                    // When booked, the provider receives a notification with user details from the ViewModel
                     val newNotification = ServiceRequest(
                         id = System.currentTimeMillis().toString(),
                         userName = profileViewModel.name.value,
@@ -171,7 +169,7 @@ fun SellerProfileScreen(
                         description = "New Booking: User is at ${profileViewModel.location.value}. Reach them at ${profileViewModel.contact.value}",
                         time = "Just now"
                     )
-                    profileViewModel.addServiceRequest(newNotification)
+                    profileViewModel.addServiceRequest(newNotification, profileViewModel.selectedSellerId.value)
                     Toast.makeText(context, "Booking Sent to $sellerName!", Toast.LENGTH_LONG).show()
                 },
                 modifier = Modifier
@@ -189,22 +187,18 @@ fun SellerProfileScreen(
 }
 
 @Composable
-fun InfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Surface(
-            modifier = Modifier.size(44.dp),
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-            }
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Column {
-            Text(text = label, style = MaterialTheme.typography.labelMedium, color = Color.Gray)
-            Text(text = value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-        }
+fun DetailRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(text = "$label:", fontWeight = FontWeight.Medium, color = Color.Gray)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = value, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
