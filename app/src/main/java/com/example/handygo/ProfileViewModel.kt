@@ -11,6 +11,14 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
+data class ProviderPost(
+    val id: String,
+    val description: String,
+    val location: String,
+    val time: String,
+    val imageUri: String? = null
+)
+
 class ProfileViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseDatabase.getInstance().getReference()
@@ -19,6 +27,8 @@ class ProfileViewModel : ViewModel() {
     var name = mutableStateOf("User Name")
     var contact = mutableStateOf("0712345678")
     var location = mutableStateOf("Nairobi, Westlands")
+    var latitude = mutableStateOf(-1.286389)
+    var longitude = mutableStateOf(36.817223)
     var bio = mutableStateOf("I need quick and reliable services.")
     var myCategory = mutableStateOf("General Provider")
     var role = mutableStateOf("user")
@@ -121,7 +131,37 @@ class ProfileViewModel : ViewModel() {
             "bio" to newBio,
             "category" to newCategory
         )
+<<<<<<< HEAD
         database.child("profiles").child(userId).updateChildren(profileMap)
+=======
+    )
+
+    // Provider Posts State
+    val providerPosts = mutableStateListOf(
+        ProviderPost(
+            "1", "Available for emergency plumbing services in Westlands.", 
+            "Westlands, Nairobi", "10 mins ago"
+        )
+    )
+
+    // Service Requests (Notifications for Provider)
+    val serviceRequests = mutableStateListOf(
+        ServiceRequest("1", "John Doe", "Plumbing", "Leaking tap in kitchen", "2 mins ago"),
+        ServiceRequest("2", "Jane Smith", "Electrical", "Socket not working", "1 hour ago")
+    )
+
+    fun updateProfile(newName: String, newContact: String, newLocation: String, newBio: String) {
+        name.value = newName
+        contact.value = newContact
+        location.value = newLocation
+        bio.value = newBio
+>>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
+    }
+
+    fun updateLocation(newLocation: String, newLat: Double, newLng: Double) {
+        location.value = newLocation
+        latitude.value = newLat
+        longitude.value = newLng
     }
 
     fun addProduct(product: MarketProduct) {
@@ -130,6 +170,7 @@ class ProfileViewModel : ViewModel() {
         database.child("marketplace").child(productId).setValue(newProduct)
     }
 
+<<<<<<< HEAD
     fun addServiceRequest(request: ServiceRequest, providerId: String) {
         if (providerId.isBlank()) return
         val requestId = database.child("requests").child(providerId).push().key ?: return
@@ -140,5 +181,13 @@ class ProfileViewModel : ViewModel() {
     fun removeServiceRequest(requestId: String) {
         val userId = auth.currentUser?.uid ?: return
         database.child("requests").child(userId).child(requestId).removeValue()
+=======
+    fun addPost(post: ProviderPost) {
+        providerPosts.add(0, post)
+    }
+
+    fun addServiceRequest(request: ServiceRequest) {
+        serviceRequests.add(0, request)
+>>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
     }
 }

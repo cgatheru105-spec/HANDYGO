@@ -1,5 +1,7 @@
 package com.example.handygo.userscreens
 
+import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,22 +19,37 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.handygo.AuthViewModel
+<<<<<<< HEAD
 import com.example.handygo.ProfileViewModel
+=======
+>>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
 import com.example.handygo.navigation.ROUTE_LOGIN
 import com.example.handygo.navigation.ROUTE_USER_HOME
 import com.google.firebase.database.FirebaseDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+<<<<<<< HEAD
 fun RegisterUserScreen(
     navController: NavHostController,
     profileViewModel: ProfileViewModel = viewModel()
 ) {
+=======
+fun RegisterUserScreen(navController: NavHostController) {
+    val context = LocalContext.current
+    val authViewModel = AuthViewModel(navController, context)
+>>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     val context = LocalContext.current
     val authViewModel = remember { AuthViewModel(navController, context) }
+
+    var emailError by remember { mutableStateOf(false) }
+
+    fun isValidEmail(target: CharSequence): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(target).matches()
+    }
 
     Box(
         modifier = Modifier
@@ -74,10 +91,19 @@ fun RegisterUserScreen(
 
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = {
+                        email = it
+                        emailError = false
+                    },
                     label = { Text("Email Address") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
+                    isError = emailError,
+                    supportingText = {
+                        if (emailError) {
+                            Text(text = "Please enter a valid email address", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -117,12 +143,16 @@ fun RegisterUserScreen(
 
                 Button(
                     onClick = {
+<<<<<<< HEAD
                         // Adding requested Firebase logic
                         val database = FirebaseDatabase.getInstance()
                         val myRef = database.getReference("users")
                         myRef.setValue("Hello")
 
                         authViewModel.register(email, password, confirmPassword, "user")
+=======
+                        authViewModel.registerUser(email, password, confirmPassword)
+>>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -140,9 +170,17 @@ fun RegisterUserScreen(
                     )
                 }
 
+<<<<<<< HEAD
                 TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
                     Text(
                         text = "Already have an account? Login here",
+=======
+                Spacer(modifier = Modifier.height(8.dp))
+
+                TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
+                    Text(
+                        text = "Already have an account? Login",
+>>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                         color = MaterialTheme.colorScheme.secondary
                     )
                 }

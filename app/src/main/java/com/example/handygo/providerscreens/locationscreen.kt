@@ -21,8 +21,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.handygo.ProfileViewModel
 import com.example.handygo.navigation.ROUTE_REGISTER_PROVIDER
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -35,27 +37,40 @@ import kotlinx.coroutines.withContext
 import java.util.Locale
 
 @Composable
-fun LocationScreen(navController: NavHostController) {
+fun LocationScreen(
+    navController: NavHostController,
+    profileViewModel: ProfileViewModel = viewModel()
+) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // Default location Nairobi
-    val defaultLocation = LatLng(-1.286389, 36.817223)
+    // Default location Nairobi or current saved location
+    val startLocation = if (profileViewModel.latitude.value != 0.0) {
+        LatLng(profileViewModel.latitude.value, profileViewModel.longitude.value)
+    } else {
+        LatLng(-1.286389, 36.817223)
+    }
 
     // Camera state
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(defaultLocation, 12f)
+        position = CameraPosition.fromLatLngZoom(startLocation, 12f)
     }
 
     // Search text
     var searchQuery by remember { mutableStateOf("") }
 
     // Marker position
-    var markerPosition by remember { mutableStateOf<LatLng?>(null) }
+    var markerPosition by remember { 
+        mutableStateOf<LatLng?>(
+            if (profileViewModel.latitude.value != 0.0) LatLng(profileViewModel.latitude.value, profileViewModel.longitude.value) 
+            else null
+        ) 
+    }
 
-    // Coordinates
-    var latitude by remember { mutableDoubleStateOf(0.0) }
-    var longitude by remember { mutableDoubleStateOf(0.0) }
+    // Coordinates and address
+    var latitude by remember { mutableDoubleStateOf(profileViewModel.latitude.value) }
+    var longitude by remember { mutableDoubleStateOf(profileViewModel.longitude.value) }
+    var addressName by remember { mutableStateOf(profileViewModel.location.value) }
 
     // Search loading state
     var isSearching by remember { mutableStateOf(false) }
@@ -84,6 +99,25 @@ fun LocationScreen(navController: NavHostController) {
     LaunchedEffect(Unit) {
         if (!hasLocationPermission) {
             permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    }
+
+    // Function to get address from LatLng
+    fun updateAddressFromLatLng(latLng: LatLng) {
+        coroutineScope.launch {
+            try {
+                val geocoder = Geocoder(context, Locale.getDefault())
+                val addresses = withContext(Dispatchers.IO) {
+                    @Suppress("DEPRECATION")
+                    geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
+                }
+                if (addresses?.isNotEmpty() == true) {
+                    val address = addresses[0]
+                    addressName = address.getAddressLine(0) ?: "Unknown Location"
+                }
+            } catch (e: Exception) {
+                addressName = "Location pinned"
+            }
         }
     }
 
@@ -119,7 +153,8 @@ fun LocationScreen(navController: NavHostController) {
                 markerPosition = latLng
                 latitude = latLng.latitude
                 longitude = latLng.longitude
-                Toast.makeText(context, "Location pinned successfully", Toast.LENGTH_SHORT).show()
+                updateAddressFromLatLng(latLng)
+                Toast.makeText(context, "Location pinned", Toast.LENGTH_SHORT).show()
             }
         ) {
             // Show marker
@@ -127,7 +162,7 @@ fun LocationScreen(navController: NavHostController) {
                 Marker(
                     state = MarkerState(position = it),
                     title = "Business Location",
-                    snippet = "Lat: $latitude, Long: $longitude"
+                    snippet = addressName
                 )
             }
         }
@@ -151,6 +186,14 @@ fun LocationScreen(navController: NavHostController) {
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
+                    if (addressName.isNotEmpty()) {
+                        Text(
+                            text = addressName,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1
+                        )
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = searchQuery,
@@ -178,6 +221,7 @@ fun LocationScreen(navController: NavHostController) {
                                                     markerPosition = foundLocation
                                                     latitude = address.latitude
                                                     longitude = address.longitude
+                                                    addressName = address.getAddressLine(0) ?: searchQuery
                                                     cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(foundLocation, 16f))
                                                 } else {
                                                     Toast.makeText(context, "Location not found", Toast.LENGTH_SHORT).show()
@@ -204,12 +248,24 @@ fun LocationScreen(navController: NavHostController) {
         // FINISH BUTTON
         Button(
             onClick = {
+<<<<<<< HEAD
                 // SENDING DATA TO FIREBASE
                 val database = FirebaseDatabase.getInstance()
                 val myRef = database.getReference("users")
                 myRef.setValue("Hello")
 
                 navController.navigate(ROUTE_REGISTER_PROVIDER)
+=======
+                // Save to ViewModel
+                profileViewModel.updateLocation(
+                    newLocation = if (addressName.isNotEmpty()) addressName else "Pinned Location",
+                    newLat = latitude,
+                    newLng = longitude
+                )
+                
+                // Return to registration or previous screen
+                navController.popBackStack()
+>>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -219,7 +275,7 @@ fun LocationScreen(navController: NavHostController) {
             enabled = markerPosition != null,
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text(text = if (markerPosition == null) "Pin Your Location" else "Continue", fontSize = 18.sp)
+            Text(text = if (markerPosition == null) "Pin Your Location" else "Confirm Location", fontSize = 18.sp)
         }
     }
 }

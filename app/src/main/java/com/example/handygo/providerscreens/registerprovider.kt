@@ -1,5 +1,7 @@
 package com.example.handygo.providerscreens
 
+import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,11 +30,22 @@ fun RegisterProviderScreen(
     navController: NavHostController,
     profileViewModel: ProfileViewModel = viewModel()
 ) {
+<<<<<<< HEAD
+=======
+    val context = LocalContext.current
+    val authViewModel = AuthViewModel(navController, context)
+>>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     val context = LocalContext.current
     val authViewModel = remember { AuthViewModel(navController, context) }
+
+    var emailError by remember { mutableStateOf(false) }
+
+    fun isValidEmail(target: CharSequence): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(target).matches()
+    }
 
     Box(
         modifier = Modifier
@@ -74,10 +87,19 @@ fun RegisterProviderScreen(
 
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = {
+                        email = it
+                        emailError = false
+                    },
                     label = { Text("Email Address") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
+                    isError = emailError,
+                    supportingText = {
+                        if (emailError) {
+                            Text(text = "Please enter a valid email address", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -117,6 +139,7 @@ fun RegisterProviderScreen(
 
                 Button(
                     onClick = {
+<<<<<<< HEAD
                         val database = FirebaseDatabase.getInstance()
                         val myRef = database.getReference("users")
                         myRef.setValue("Hello")
@@ -129,6 +152,20 @@ fun RegisterProviderScreen(
                             "category" to profileViewModel.myCategory.value
                         )
                         authViewModel.register(email, password, confirmPassword, "provider", extraData)
+=======
+                        authViewModel.registerProvider(
+                            email = email,
+                            pass = password,
+                            confpass = confirmPassword,
+                            name = profileViewModel.name.value,
+                            contact = profileViewModel.contact.value,
+                            location = profileViewModel.location.value,
+                            latitude = profileViewModel.latitude.value,
+                            longitude = profileViewModel.longitude.value,
+                            bio = profileViewModel.bio.value,
+                            profileImage = profileViewModel.profileImageUri.value
+                        )
+>>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -146,9 +183,17 @@ fun RegisterProviderScreen(
                     )
                 }
 
+<<<<<<< HEAD
                 TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
                     Text(
                         text = "Already have an account? Login here",
+=======
+                Spacer(modifier = Modifier.height(8.dp))
+
+                TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
+                    Text(
+                        text = "Already have an account? Login",
+>>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                         color = MaterialTheme.colorScheme.secondary
                     )
                 }
