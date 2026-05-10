@@ -1,7 +1,6 @@
 package com.example.handygo.providerscreens
 
 import android.util.Patterns
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,8 +20,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.handygo.AuthViewModel
 import com.example.handygo.ProfileViewModel
 import com.example.handygo.navigation.ROUTE_LOGIN
-import com.example.handygo.navigation.ROUTE_PROVIDER_HOME
-import com.google.firebase.database.FirebaseDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,17 +27,12 @@ fun RegisterProviderScreen(
     navController: NavHostController,
     profileViewModel: ProfileViewModel = viewModel()
 ) {
-<<<<<<< HEAD
-=======
-    val context = LocalContext.current
-    val authViewModel = AuthViewModel(navController, context)
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
     val context = LocalContext.current
     val authViewModel = remember { AuthViewModel(navController, context) }
 
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf(false) }
 
     fun isValidEmail(target: CharSequence): Boolean {
@@ -120,7 +112,7 @@ fun RegisterProviderScreen(
                         focusedLabelColor = MaterialTheme.colorScheme.primary
                     )
                 )
-                
+
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
@@ -139,20 +131,12 @@ fun RegisterProviderScreen(
 
                 Button(
                     onClick = {
-<<<<<<< HEAD
-                        val database = FirebaseDatabase.getInstance()
-                        val myRef = database.getReference("users")
-                        myRef.setValue("Hello")
+                        if (!isValidEmail(email)) {
+                            emailError = true
+                            return@Button
+                        }
 
-                        val extraData = mapOf(
-                            "name" to profileViewModel.name.value,
-                            "contact" to profileViewModel.contact.value,
-                            "location" to profileViewModel.location.value,
-                            "bio" to profileViewModel.bio.value,
-                            "category" to profileViewModel.myCategory.value
-                        )
-                        authViewModel.register(email, password, confirmPassword, "provider", extraData)
-=======
+                        // Using the ViewModel to handle Firebase registration
                         authViewModel.registerProvider(
                             email = email,
                             pass = password,
@@ -165,7 +149,6 @@ fun RegisterProviderScreen(
                             bio = profileViewModel.bio.value,
                             profileImage = profileViewModel.profileImageUri.value
                         )
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -183,17 +166,11 @@ fun RegisterProviderScreen(
                     )
                 }
 
-<<<<<<< HEAD
-                TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
-                    Text(
-                        text = "Already have an account? Login here",
-=======
                 Spacer(modifier = Modifier.height(8.dp))
 
                 TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
                     Text(
                         text = "Already have an account? Login",
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                         color = MaterialTheme.colorScheme.secondary
                     )
                 }
