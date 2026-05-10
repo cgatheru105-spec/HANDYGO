@@ -19,31 +19,22 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.handygo.AuthViewModel
-<<<<<<< HEAD
 import com.example.handygo.ProfileViewModel
-=======
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
 import com.example.handygo.navigation.ROUTE_LOGIN
 import com.example.handygo.navigation.ROUTE_USER_HOME
 import com.google.firebase.database.FirebaseDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-<<<<<<< HEAD
 fun RegisterUserScreen(
     navController: NavHostController,
     profileViewModel: ProfileViewModel = viewModel()
 ) {
-=======
-fun RegisterUserScreen(navController: NavHostController) {
     val context = LocalContext.current
-    val authViewModel = AuthViewModel(navController, context)
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
+    val authViewModel = remember { AuthViewModel(navController, context) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    val context = LocalContext.current
-    val authViewModel = remember { AuthViewModel(navController, context) }
 
     var emailError by remember { mutableStateOf(false) }
 
@@ -143,16 +134,19 @@ fun RegisterUserScreen(navController: NavHostController) {
 
                 Button(
                     onClick = {
-<<<<<<< HEAD
-                        // Adding requested Firebase logic
-                        val database = FirebaseDatabase.getInstance()
-                        val myRef = database.getReference("users")
-                        myRef.setValue("Hello")
-
-                        authViewModel.register(email, password, confirmPassword, "user")
-=======
-                        authViewModel.registerUser(email, password, confirmPassword)
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
+                        if (!isValidEmail(email)) {
+                            emailError = true
+                        } else {
+                            authViewModel.registerUser(
+                                email = email,
+                                pass = password,
+                                confpass = confirmPassword,
+                                name = "New User",
+                                contact = "",
+                                location = "",
+                                bio = ""
+                            )
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -170,17 +164,9 @@ fun RegisterUserScreen(navController: NavHostController) {
                     )
                 }
 
-<<<<<<< HEAD
                 TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
                     Text(
                         text = "Already have an account? Login here",
-=======
-                Spacer(modifier = Modifier.height(8.dp))
-
-                TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
-                    Text(
-                        text = "Already have an account? Login",
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                         color = MaterialTheme.colorScheme.secondary
                     )
                 }

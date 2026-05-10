@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.handygo.ProfileViewModel
 import com.example.handygo.navigation.ROUTE_SEARCH
 import com.example.handygo.navigation.ROUTE_SELLER_PROFILE
@@ -376,7 +377,14 @@ fun UserMarketProductCard(product: MarketProduct, onClick: () -> Unit) {
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                if (product.imageRes != null) {
+                if (product.imageUri != null) {
+                    AsyncImage(
+                        model = product.imageUri,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else if (product.imageRes != null) {
                     Image(
                         painter = painterResource(id = product.imageRes),
                         contentDescription = null,

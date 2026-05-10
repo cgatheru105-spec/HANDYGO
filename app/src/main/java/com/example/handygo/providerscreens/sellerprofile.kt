@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,40 +29,32 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.handygo.ProfileViewModel
-<<<<<<< HEAD
-import com.google.firebase.database.FirebaseDatabase
-=======
 import com.example.handygo.ProviderPost
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
+import com.google.firebase.database.FirebaseDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SellerProfileScreen(
     navController: NavHostController, 
-<<<<<<< HEAD
     profileViewModel: ProfileViewModel = viewModel()
-=======
-    profileViewModel: ProfileViewModel = viewModel(),
-    sellerName: String? = null,
-    category: String = "Professional Service Provider"
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
 ) {
     val sellerName = profileViewModel.selectedSellerName.value.ifBlank { "Provider Name" }
     val category = profileViewModel.selectedSellerCategory.value.ifBlank { "Service Provider" }
     val location = profileViewModel.selectedSellerLocation.value.ifBlank { "Location Unknown" }
     val cost = profileViewModel.selectedSellerPrice.value.ifBlank { "Negotiable" }
+    val sellerId = profileViewModel.selectedSellerId.value
 
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     
-    // If no sellerName is passed, we show the current profile
-    val displayName = sellerName ?: profileViewModel.name.value
-    val displayLocation = if (sellerName == null) profileViewModel.location.value else "Nairobi, Kenya"
-    val displayBio = if (sellerName == null) profileViewModel.bio.value else "Professional services with guaranteed quality."
-    val profileImage = if (sellerName == null) profileViewModel.profileImageUri.value else null
-    val contact = if (sellerName == null) profileViewModel.contact.value else "+254 700 123 456"
+    // In a real app, you might fetch more details based on sellerId
+    val displayName = sellerName
+    val displayLocation = location
+    val displayBio = "Professional services with guaranteed quality."
+    val profileImage = null // Could be fetched from Firebase
+    val contact = "+254 700 123 456" // Could be fetched from Firebase
     
-    val myProducts = profileViewModel.marketplaceProducts.filter { sellerName == null || it.sellerName == sellerName || it.sellerName == "You" }
+    val myProducts = profileViewModel.marketplaceProducts.filter { it.sellerId == sellerId }
     val myPosts = profileViewModel.providerPosts // In a real app, filter by sellerId
 
     Scaffold(
@@ -89,28 +82,14 @@ fun SellerProfileScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-<<<<<<< HEAD
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-=======
             // Profile Image
             Box(
                 modifier = Modifier
                     .size(100.dp)
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-<<<<<<< HEAD
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier.size(80.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-=======
                 if (profileImage != null) {
                     AsyncImage(
                         model = profileImage,
@@ -119,25 +98,17 @@ fun SellerProfileScreen(
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    Text(
-                        text = displayName.take(1).uppercase(),
-                        style = MaterialTheme.typography.displayMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier.size(60.dp),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-<<<<<<< HEAD
-            Text(text = sellerName, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFB300), modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "4.8 (Recent Rating)", fontSize = 14.sp, color = Color.Gray)
-=======
             Text(
                 text = displayName,
                 style = MaterialTheme.typography.headlineSmall,
@@ -178,23 +149,12 @@ fun SellerProfileScreen(
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     InfoRow(icon = Icons.Default.LocationOn, label = "Base Location", value = displayLocation)
                     InfoRow(icon = Icons.Default.Phone, label = "Contact number", value = contact)
+                    InfoRow(icon = Icons.Default.AttachMoney, label = "Starting Price", value = cost)
                 }
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-<<<<<<< HEAD
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    DetailRow(icon = Icons.Default.Build, label = "Service", value = category)
-                    DetailRow(icon = Icons.Default.LocationOn, label = "Location", value = location)
-                    DetailRow(icon = Icons.Default.AttachMoney, label = "Starting Price", value = cost)
-=======
             // Marketplace Items Section
             if (myProducts.isNotEmpty()) {
                 Text(
@@ -283,7 +243,6 @@ fun SellerProfileScreen(
                             }
                         }
                     }
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                 }
             }
 
@@ -291,14 +250,11 @@ fun SellerProfileScreen(
 
             Button(
                 onClick = { 
-<<<<<<< HEAD
                     // SENDING DATA TO FIREBASE
                     val database = FirebaseDatabase.getInstance()
                     val myRef = database.getReference("users")
                     myRef.setValue("Hello")
 
-=======
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                     val newNotification = ServiceRequest(
                         id = System.currentTimeMillis().toString(),
                         userName = profileViewModel.name.value,
@@ -306,13 +262,8 @@ fun SellerProfileScreen(
                         description = "New Booking Request",
                         time = "Just now"
                     )
-<<<<<<< HEAD
-                    profileViewModel.addServiceRequest(newNotification, profileViewModel.selectedSellerId.value)
-                    Toast.makeText(context, "Booking Sent to $sellerName!", Toast.LENGTH_LONG).show()
-=======
-                    profileViewModel.addServiceRequest(newNotification)
+                    profileViewModel.addServiceRequest(newNotification, sellerId)
                     Toast.makeText(context, "Booking Sent to $displayName!", Toast.LENGTH_LONG).show()
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(12.dp),
@@ -325,16 +276,14 @@ fun SellerProfileScreen(
 }
 
 @Composable
-fun DetailRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(text = "$label:", fontWeight = FontWeight.Medium, color = Color.Gray)
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(text = value, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+fun InfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+        Spacer(modifier = Modifier.width(16.dp))
+        Column {
+            Text(text = label, style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+            Text(text = value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+        }
     }
 }
 

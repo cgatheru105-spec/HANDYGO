@@ -147,7 +147,8 @@ fun RegisterProviderScreen(
                             latitude = profileViewModel.latitude.value,
                             longitude = profileViewModel.longitude.value,
                             bio = profileViewModel.bio.value,
-                            profileImage = profileViewModel.profileImageUri.value
+                            profileImage = profileViewModel.profileImageUri.value,
+                            category = profileViewModel.myCategory.value
                         )
                     },
                     modifier = Modifier

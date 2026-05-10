@@ -1,4 +1,4 @@
-package com.example.handygo.model
+package com.example.handygo.data
 
 data class Provider(
     val uid: String = "",
@@ -9,5 +9,7 @@ data class Provider(
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
     val bio: String = "",
-    val profileImage: String = ""
+    val profileImage: String = "", // URL to the image
+    val category: String = "",
+    val userType: String = "provider"
 )

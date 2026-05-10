@@ -43,7 +43,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 
 data class MarketProduct(
-<<<<<<< HEAD
     val id: String = "",
     val name: String = "",
     val description: String = "",
@@ -51,17 +50,8 @@ data class MarketProduct(
     val location: String = "",
     val sellerName: String = "",
     val sellerId: String = "",
-    val imageRes: Int? = null
-=======
-    val id: String,
-    val name: String,
-    val description: String,
-    val price: String,
-    val location: String,
-    val sellerName: String,
     val imageRes: Int? = null,
     val imageUri: String? = null
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,11 +68,8 @@ fun ProviderHomeScreen(
     }
 
     val marketplaceProducts = profileViewModel.marketplaceProducts
-<<<<<<< HEAD
     val requestsCount = profileViewModel.serviceRequests.size
-=======
     val providerPosts = profileViewModel.providerPosts
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
     var showPostDialog by remember { mutableStateOf(false) }
     var showServiceDialog by remember { mutableStateOf(false) }
 
@@ -447,27 +434,24 @@ fun PostProductDialog(onDismiss: () -> Unit, onPost: (MarketProduct) -> Unit) {
     var description by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
-<<<<<<< HEAD
-    val auth = FirebaseAuth.getInstance()
-=======
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    val auth = FirebaseAuth.getInstance()
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         selectedImageUri = uri
     }
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Post New Product", fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Product Name") })
-                OutlinedTextField(value = description, onValueChange = { description = it }, label = { Text("Description") })
-                OutlinedTextField(value = price, onValueChange = { price = it }, label = { Text("Price (e.g. Ksh 500)") })
-                OutlinedTextField(value = location, onValueChange = { location = it }, label = { Text("Location") })
+                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Product Name") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = description, onValueChange = { description = it }, label = { Text("Description") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = price, onValueChange = { price = it }, label = { Text("Price (e.g. Ksh 500)") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = location, onValueChange = { location = it }, label = { Text("Location") }, modifier = Modifier.fillMaxWidth())
                 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -507,11 +491,8 @@ fun PostProductDialog(onDismiss: () -> Unit, onPost: (MarketProduct) -> Unit) {
                             price = price,
                             location = location,
                             sellerName = "You",
-<<<<<<< HEAD
-                            sellerId = auth.currentUser?.uid ?: ""
-=======
+                            sellerId = auth.currentUser?.uid ?: "",
                             imageUri = selectedImageUri?.toString()
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                         ))
                     }
                 },

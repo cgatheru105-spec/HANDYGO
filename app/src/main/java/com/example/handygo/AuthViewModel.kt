@@ -6,35 +6,15 @@ import androidx.navigation.NavHostController
 import com.example.handygo.navigation.ROUTE_USER_HOME
 import com.example.handygo.navigation.ROUTE_PROVIDER_HOME
 import com.example.handygo.navigation.ROUTE_LOGIN
+import com.example.handygo.navigation.ROUTE_START
 import com.example.handygo.navigation.ROUTE_SPLASH // Assuming ROUTE_SPLASH exists for popUpTo
+import com.example.handygo.data.User
+import com.example.handygo.data.Provider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.database.FirebaseDatabase
 
-// Data models (should be in separate files, e.g., data/User.kt, data/Provider.kt)
-data class User(
-    val uid: String = "",
-    val email: String = "",
-    val name: String = "",
-    val contact: String = "",
-    val location: String = "",
-    val bio: String = "",
-    val userType: String = "user"
-)
-
-data class Provider(
-    val uid: String = "",
-    val email: String = "",
-    val name: String = "",
-    val contact: String = "",
-    val location: String = "",
-    val latitude: Double = 0.0,
-    val longitude: Double = 0.0,
-    val bio: String = "",
-    val profileImage: String = "", // URL to the image
-    val category: String = "",
-    val userType: String = "provider"
-)
+// Data models are now in com.example.handygo.data
 
 class AuthViewModel(var navController: NavHostController, var context: Context) {
 
@@ -54,26 +34,30 @@ class AuthViewModel(var navController: NavHostController, var context: Context) 
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     val firebaseUser = auth.currentUser
-                    firebaseUser?.let {
-                        // Fetch user role/type from Realtime Database to navigate correctly
-                        database.getReference("users").child(it.uid).get().addOnSuccessListener {
-                            val userType = it.child("userType").getValue(String::class.java)
-                            if (userType == "provider") {
-                                navController.navigate(ROUTE_PROVIDER_HOME) {
-                                    popUpTo(ROUTE_LOGIN) { inclusive = true }
-                                }
-                            } else {
+                    firebaseUser?.let { user ->
+                        val uid = user.uid
+                        // Check in users first
+                        database.getReference("profiles").child("users").child(uid).get().addOnSuccessListener { snapshot ->
+                            if (snapshot.exists()) {
                                 navController.navigate(ROUTE_USER_HOME) {
                                     popUpTo(ROUTE_LOGIN) { inclusive = true }
                                 }
+                                Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
+                            } else {
+                                // Check in providers
+                                database.getReference("profiles").child("providers").child(uid).get().addOnSuccessListener { providerSnapshot ->
+                                    if (providerSnapshot.exists()) {
+                                        navController.navigate(ROUTE_PROVIDER_HOME) {
+                                            popUpTo(ROUTE_LOGIN) { inclusive = true }
+                                        }
+                                        Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        Toast.makeText(context, "Profile not found", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                             }
-                            Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
                         }.addOnFailureListener {
-                            Toast.makeText(context, "Failed to get user data: ${it.message}", Toast.LENGTH_LONG).show()
-                            // Still navigate, but user might not have full profile
-                            navController.navigate(ROUTE_USER_HOME) {
-                                popUpTo(ROUTE_LOGIN) { inclusive = true }
-                            }
+                            Toast.makeText(context, "Login failed: ${it.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 } else {
@@ -101,19 +85,19 @@ class AuthViewModel(var navController: NavHostController, var context: Context) 
                 val firebaseUser = auth.currentUser
                 firebaseUser?.let {
                     val uid = it.uid
-                    val userRef = database.getReference("users").child(uid)
+                    val profileRef = database.getReference("profiles").child("users").child(uid)
 
-                    val user = User(
-                        uid = uid,
-                        email = email,
-                        name = name,
-                        contact = contact,
-                        location = location,
-                        bio = bio,
-                        userType = "user"
+                    val profileMap = mapOf(
+                        "uid" to uid,
+                        "email" to email,
+                        "name" to name,
+                        "contact" to contact,
+                        "location" to location,
+                        "bio" to bio,
+                        "role" to "user"
                     )
 
-                    userRef.setValue(user)
+                    profileRef.setValue(profileMap)
                         .addOnSuccessListener {
                             Toast.makeText(context, "User Registered and data saved!", Toast.LENGTH_LONG).show()
                             navController.navigate(ROUTE_USER_HOME) {
@@ -121,9 +105,7 @@ class AuthViewModel(var navController: NavHostController, var context: Context) 
                             }
                         }
                         .addOnFailureListener {
-                            t
                             Toast.makeText(context, "Failed to save user data: ${it.message}", Toast.LENGTH_LONG).show()
-                            // Optionally, delete the Firebase Auth user if data saving fails
                             firebaseUser.delete()
                         }
                 }
@@ -169,23 +151,23 @@ class AuthViewModel(var navController: NavHostController, var context: Context) 
                 val firebaseUser = auth.currentUser
                 firebaseUser?.let {
                     val uid = it.uid
-                    val providerRef = database.getReference("providers").child(uid) // Store providers under 'users' for unified access
+                    val profileRef = database.getReference("profiles").child("providers").child(uid)
 
-                    val provider = Provider(
-                        uid = uid,
-                        email = email,
-                        name = name,
-                        contact = contact,
-                        location = location,
-                        latitude = latitude,
-                        longitude = longitude,
-                        bio = bio,
-                        profileImage = profileImage ?: "", // Handle nullability
-                        category = category,
-                        userType = "provider"
+                    val profileMap = mapOf(
+                        "uid" to uid,
+                        "email" to email,
+                        "name" to name,
+                        "contact" to contact,
+                        "location" to location,
+                        "latitude" to latitude,
+                        "longitude" to longitude,
+                        "bio" to bio,
+                        "profileImage" to (profileImage ?: ""),
+                        "category" to category,
+                        "role" to "provider"
                     )
 
-                    providerRef.setValue(provider)
+                    profileRef.setValue(profileMap)
                         .addOnSuccessListener {
                             Toast.makeText(context, "Provider Registered and data saved!", Toast.LENGTH_LONG).show()
                             navController.navigate(ROUTE_PROVIDER_HOME) {
@@ -226,8 +208,8 @@ class AuthViewModel(var navController: NavHostController, var context: Context) 
     fun logout() {
         auth.signOut()
         Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
-        navController.navigate(ROUTE_LOGIN) {
-            popUpTo(ROUTE_SPLASH) { inclusive = true } // Use ROUTE_SPLASH or appropriate start destination
+        navController.navigate(ROUTE_START) {
+            popUpTo(0) { inclusive = true }
         }
     }
 }
