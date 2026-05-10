@@ -25,6 +25,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.handygo.ProfileViewModel
 import com.example.handygo.navigation.ROUTE_SELLER_PROFILE
 import com.example.handygo.ui.theme.HANDYGOTheme
+import com.google.firebase.database.FirebaseDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,10 +104,15 @@ fun SearchScreen(
                     ProviderCard(
                         providerData = providerData,
                         onClick = {
+                            // SENDING DATA TO FIREBASE
+                            val database = FirebaseDatabase.getInstance()
+                            val myRef = database.getReference("users")
+                            myRef.setValue("Hello")
+
                             profileViewModel.selectedSellerName.value = providerData["name"] as? String ?: ""
                             profileViewModel.selectedSellerCategory.value = providerData["category"] as? String ?: ""
                             profileViewModel.selectedSellerLocation.value = providerData["location"] as? String ?: ""
-                            profileViewModel.selectedSellerPrice.value = "Ksh 500" // Default or fetched from data
+                            profileViewModel.selectedSellerPrice.value = "Ksh 500" 
                             profileViewModel.selectedSellerId.value = providerData["id"] as? String ?: ""
                             navController.navigate(ROUTE_SELLER_PROFILE)
                         }
@@ -145,7 +151,6 @@ fun ProviderCard(providerData: Map<String, Any>, onClick: () -> Unit) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Placeholder for profile image
             Surface(
                 modifier = Modifier.size(60.dp),
                 shape = RoundedCornerShape(12.dp),
@@ -183,7 +188,7 @@ fun ProviderCard(providerData: Map<String, Any>, onClick: () -> Unit) {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "4.8", // Default rating
+                            text = "4.8",
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.Bold
                         )

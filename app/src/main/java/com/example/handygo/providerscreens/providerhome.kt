@@ -34,6 +34,7 @@ import com.example.handygo.navigation.ROUTE_SELLER_PROFILE
 import com.example.handygo.navigation.ROUTE_SETTINGS
 import com.example.handygo.navigation.ROUTE_USER_PROFILE
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 data class MarketProduct(
     val id: String = "",
@@ -52,6 +53,13 @@ fun ProviderHomeScreen(
     navHostController: NavHostController,
     profileViewModel: ProfileViewModel = viewModel()
 ) {
+    // Adding requested Firebase logic
+    LaunchedEffect(Unit) {
+        val database = FirebaseDatabase.getInstance()
+        val myRef = database.getReference("users")
+        myRef.setValue("Hello")
+    }
+
     val marketplaceProducts = profileViewModel.marketplaceProducts
     val requestsCount = profileViewModel.serviceRequests.size
     var showPostDialog by remember { mutableStateOf(false) }
@@ -84,32 +92,32 @@ fun ProviderHomeScreen(
         },
         bottomBar = {
             NavigationBar(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
             ) {
                 NavigationBarItem(
                     selected = true,
                     onClick = { /* Already on Home */ },
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home", tint = Color.White) },
-                    label = { Text("Home", color = Color.White) }
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+                    label = { Text("Home") }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { /* Navigate to Search */ },
-                    icon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.White.copy(0.7f)) },
-                    label = { Text("Search", color = Color.White.copy(0.7f)) }
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                    label = { Text("Search") }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { navHostController.navigate(ROUTE_USER_PROFILE) },
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile", tint = Color.White.copy(0.7f)) },
-                    label = { Text("Profile", color = Color.White.copy(0.7f)) }
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
+                    label = { Text("Profile") }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { navHostController.navigate(ROUTE_SETTINGS) },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings", tint = Color.White.copy(0.7f)) },
-                    label = { Text("Settings", color = Color.White.copy(0.7f)) }
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                    label = { Text("Settings") }
                 )
             }
         },
@@ -206,6 +214,11 @@ fun ProviderHomeScreen(
         PostProductDialog(
             onDismiss = { showPostDialog = false },
             onPost = { newProduct ->
+                // Also adding to post product action
+                val database = FirebaseDatabase.getInstance()
+                val myRef = database.getReference("users")
+                myRef.setValue("Hello")
+
                 profileViewModel.addProduct(newProduct)
                 showPostDialog = false
             }

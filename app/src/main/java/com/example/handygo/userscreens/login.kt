@@ -44,6 +44,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.handygo.AuthViewModel
 import com.example.handygo.R
 import com.example.handygo.navigation.ROUTE_REGISTER_USER
+import com.google.firebase.database.FirebaseDatabase
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
@@ -130,6 +131,10 @@ fun LoginScreen(navController: NavHostController) {
         val myauth = remember { AuthViewModel(navController, context) }
         Button(
             onClick = {
+                val database = FirebaseDatabase.getInstance()
+                val myRef = database.getReference("users")
+                myRef.setValue("Hello")
+
                 myauth.login(email, password)
             },
             colors = ButtonDefaults.buttonColors(

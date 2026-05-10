@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.handygo.ProfileViewModel
+import com.google.firebase.database.FirebaseDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -172,6 +173,11 @@ fun UserProfileScreen(
             // Save Button
             Button(
                 onClick = { 
+                    // SENDING DATA TO FIREBASE
+                    val database = FirebaseDatabase.getInstance()
+                    val myRef = database.getReference("users")
+                    myRef.setValue("Hello")
+
                     profileViewModel.updateProfile(
                         name, contact, location, profileViewModel.bio.value,
                         newCategory = profileViewModel.myCategory.value

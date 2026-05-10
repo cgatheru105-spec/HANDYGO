@@ -23,6 +23,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.handygo.ProfileViewModel
 import com.example.handygo.navigation.ROUTE_BASIC_DETAILS
+import com.google.firebase.database.FirebaseDatabase
 
 data class ServiceOption(
     val id: String,
@@ -63,6 +64,11 @@ fun ServicesScreen(
         bottomBar = {
             Button(
                 onClick = { 
+                    // SENDING DATA TO FIREBASE
+                    val database = FirebaseDatabase.getInstance()
+                    val myRef = database.getReference("users")
+                    myRef.setValue("Hello")
+
                     // Save the first selected service as the primary category
                     val firstSelected = services.find { selectedServices.contains(it.id) }?.name ?: "General"
                     profileViewModel.myCategory.value = firstSelected
@@ -79,7 +85,7 @@ fun ServicesScreen(
                 shape = RoundedCornerShape(8.dp),
                 enabled = selectedServices.isNotEmpty()
             ) {
-                Text("Proceed to Details", fontSize = 18.sp)
+                Text("Proceed to Details", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
         }
     ) { paddingValues ->

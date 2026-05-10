@@ -27,6 +27,7 @@ import com.example.handygo.navigation.ROUTE_REGISTER_PROVIDER
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.database.FirebaseDatabase
 import com.google.maps.android.compose.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -203,7 +204,11 @@ fun LocationScreen(navController: NavHostController) {
         // FINISH BUTTON
         Button(
             onClick = {
-                // Return to previous flow or complete setup
+                // SENDING DATA TO FIREBASE
+                val database = FirebaseDatabase.getInstance()
+                val myRef = database.getReference("users")
+                myRef.setValue("Hello")
+
                 navController.navigate(ROUTE_REGISTER_PROVIDER)
             },
             modifier = Modifier

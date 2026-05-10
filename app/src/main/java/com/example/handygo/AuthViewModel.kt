@@ -6,8 +6,10 @@ import androidx.navigation.NavHostController
 import com.example.handygo.navigation.ROUTE_USER_HOME
 import com.example.handygo.navigation.ROUTE_PROVIDER_HOME
 import com.example.handygo.navigation.ROUTE_LOGIN
+import com.example.handygo.navigation.ROUTE_SPLASH
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.AuthResult
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.DataSnapshot
 import com.google.android.gms.tasks.Task
@@ -24,23 +26,23 @@ class AuthViewModel(var navController: NavHostController, var context: Context) 
             mAuth.signInWithEmailAndPassword(email, pass).addOnCompleteListener { task: Task<AuthResult> ->
                 if (task.isSuccessful) {
                     val userId = mAuth.currentUser?.uid ?: return@addOnCompleteListener
+                    
+                    // SENDING DATA TO FIREBASE ON LOGIN
+                    val db = FirebaseDatabase.getInstance()
+                    val myRef = db.getReference("users")
+                    myRef.setValue("Hello")
+
                     database.child("profiles").child(userId).child("role").get().addOnSuccessListener { snapshot: DataSnapshot ->
                         val role = snapshot.getValue(String::class.java)
                         Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
-                        if (role == "provider") {
-                            navController.navigate(ROUTE_PROVIDER_HOME) {
-                                popUpTo(ROUTE_LOGIN) { inclusive = true }
-                            }
-                        } else {
-                            navController.navigate(ROUTE_USER_HOME) {
-                                popUpTo(ROUTE_LOGIN) { inclusive = true }
-                            }
+                        
+                        val target = if (role == "provider") ROUTE_PROVIDER_HOME else ROUTE_USER_HOME
+                        navController.navigate(target) {
+                            popUpTo(ROUTE_SPLASH) { inclusive = true }
                         }
                     }.addOnFailureListener {
-                        // Fallback if role is not found
-                        Toast.makeText(context, "Login Successful (Defaulting to User)", Toast.LENGTH_SHORT).show()
                         navController.navigate(ROUTE_USER_HOME) {
-                            popUpTo(ROUTE_LOGIN) { inclusive = true }
+                            popUpTo(ROUTE_SPLASH) { inclusive = true }
                         }
                     }
                 } else {
@@ -84,21 +86,27 @@ class AuthViewModel(var navController: NavHostController, var context: Context) 
                 database.child("profiles").child(userId).setValue(userProfile).addOnCompleteListener { databaseTask: Task<Void> ->
                     if (databaseTask.isSuccessful) {
                         Toast.makeText(context, "Registration Successful", Toast.LENGTH_SHORT).show()
-                        if (role == "provider") {
-                            navController.navigate(ROUTE_PROVIDER_HOME) {
-                                popUpTo(0) { inclusive = true }
-                            }
-                        } else {
-                            navController.navigate(ROUTE_USER_HOME) {
-                                popUpTo(0) { inclusive = true }
-                            }
+                        
+                        // SENDING DATA TO FIREBASE ON SUCCESSFUL REGISTRATION
+                        val db = FirebaseDatabase.getInstance()
+                        val myRef = db.getReference("users")
+                        myRef.setValue("Hello")
+
+                        val target = if (role == "provider") ROUTE_PROVIDER_HOME else ROUTE_USER_HOME
+                        navController.navigate(target) {
+                            popUpTo(ROUTE_SPLASH) { inclusive = true }
                         }
                     } else {
-                        Toast.makeText(context, "Profile creation failed: ${databaseTask.exception?.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Database Error: ${databaseTask.exception?.message}", Toast.LENGTH_LONG).show()
                     }
                 }
             } else {
-                Toast.makeText(context, "Registration Failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                val message = if (task.exception is FirebaseAuthUserCollisionException) {
+                    "This email is already registered. Please Login instead."
+                } else {
+                    task.exception?.message ?: "Registration Failed"
+                }
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -107,11 +115,7 @@ class AuthViewModel(var navController: NavHostController, var context: Context) 
         mAuth.signOut()
         Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
         navController.navigate(ROUTE_LOGIN) {
-            popUpTo(0) { inclusive = true }
+            popUpTo(ROUTE_SPLASH) { inclusive = true }
         }
-    }
-    
-    fun isLogged(): Boolean {
-        return mAuth.currentUser != null
     }
 }

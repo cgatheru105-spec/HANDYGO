@@ -12,7 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +35,7 @@ import com.example.handygo.navigation.ROUTE_SETTINGS
 import com.example.handygo.navigation.ROUTE_USER_PROFILE
 import com.example.handygo.providerscreens.MarketProduct
 import com.example.handygo.ui.theme.HANDYGOTheme
+import com.google.firebase.database.FirebaseDatabase
 
 data class Category(val name: String, val icon: ImageVector)
 data class FeaturedService(val id: String, val name: String, val provider: String, val price: String, val rating: Double, val providerId: String = "")
@@ -45,6 +46,13 @@ fun UserHomeScreen(
     navHostController: NavHostController,
     profileViewModel: ProfileViewModel = viewModel()
 ) {
+    // Adding requested Firebase logic
+    LaunchedEffect(Unit) {
+        val database = FirebaseDatabase.getInstance()
+        val myRef = database.getReference("users")
+        myRef.setValue("Hello")
+    }
+
     val marketplaceProducts = profileViewModel.marketplaceProducts
     val providers = profileViewModel.allProviders
     

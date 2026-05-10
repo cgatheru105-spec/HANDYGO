@@ -54,8 +54,11 @@ dependencies {
     implementation(libs.google.maps)
 
     implementation(libs.material)
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.database)
+    
+    // Firebase dependencies
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-database-ktx")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

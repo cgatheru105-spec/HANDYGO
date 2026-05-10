@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
@@ -31,8 +32,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.handygo.ProfileViewModel
-import com.example.handygo.navigation.ROUTE_REGISTER_PROVIDER
+import com.example.handygo.navigation.ROUTE_LOCATION
 import com.example.handygo.ui.theme.HANDYGOTheme
+import com.google.firebase.database.FirebaseDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -134,7 +136,7 @@ fun BasicDetailsScreen(
                 placeholder = { Text("Enter your official name") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     focusedLabelColor = MaterialTheme.colorScheme.primary
@@ -143,27 +145,28 @@ fun BasicDetailsScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded },
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = category,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Service Category") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
+                    trailingIcon = { 
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().clickable { expanded = true },
+                    shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         focusedLabelColor = MaterialTheme.colorScheme.primary
                     )
                 )
-                ExposedDropdownMenu(
+                DropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.fillMaxWidth(0.8f)
                 ) {
                     categories.forEach { selectionOption ->
                         DropdownMenuItem(
@@ -188,7 +191,7 @@ fun BasicDetailsScreen(
                 leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 singleLine = true,
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     focusedLabelColor = MaterialTheme.colorScheme.primary
@@ -205,7 +208,7 @@ fun BasicDetailsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
                 singleLine = true,
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     focusedLabelColor = MaterialTheme.colorScheme.primary
@@ -223,7 +226,7 @@ fun BasicDetailsScreen(
                     .fillMaxWidth()
                     .height(120.dp),
                 maxLines = 5,
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     focusedLabelColor = MaterialTheme.colorScheme.primary
@@ -234,14 +237,19 @@ fun BasicDetailsScreen(
 
             Button(
                 onClick = { 
-                    // Store data locally in ViewModel first
+                    // SENDING DATA TO FIREBASE
+                    val database = FirebaseDatabase.getInstance()
+                    val myRef = database.getReference("users")
+                    myRef.setValue("Hello")
+
                     profileViewModel.name.value = name
                     profileViewModel.contact.value = contact
                     profileViewModel.location.value = location
                     profileViewModel.bio.value = bio
                     profileViewModel.myCategory.value = category
 
-                    navController.navigate(ROUTE_REGISTER_PROVIDER)
+                    // CORRECTED NAVIGATION FLOW: Goes to Location Screen next
+                    navController.navigate(ROUTE_LOCATION)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -250,10 +258,10 @@ fun BasicDetailsScreen(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(12.dp),
                 enabled = name.isNotBlank() && contact.isNotBlank() && location.isNotBlank() && bio.isNotBlank() && category.isNotBlank()
             ) {
-                Text("Save & Continue", fontSize = 18.sp)
+                Text("Save & Continue", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

@@ -18,6 +18,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.handygo.AuthViewModel
 import com.example.handygo.ProfileViewModel
+import com.example.handygo.navigation.ROUTE_LOGIN
+import com.example.handygo.navigation.ROUTE_USER_HOME
+import com.google.firebase.database.FirebaseDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -114,6 +117,11 @@ fun RegisterUserScreen(
 
                 Button(
                     onClick = {
+                        // Adding requested Firebase logic
+                        val database = FirebaseDatabase.getInstance()
+                        val myRef = database.getReference("users")
+                        myRef.setValue("Hello")
+
                         authViewModel.register(email, password, confirmPassword, "user")
                     },
                     modifier = Modifier
@@ -129,6 +137,13 @@ fun RegisterUserScreen(
                         text = "REGISTER",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
+                    )
+                }
+
+                TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
+                    Text(
+                        text = "Already have an account? Login here",
+                        color = MaterialTheme.colorScheme.secondary
                     )
                 }
             }

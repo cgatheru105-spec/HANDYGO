@@ -42,10 +42,14 @@ fun Splashscreen(
     val database = FirebaseDatabase.getInstance().getReference()
 
     LaunchedEffect(key1 = true) {
+        // Adding requested Firebase logic
+        val db = FirebaseDatabase.getInstance()
+        val myRef = db.getReference("users")
+        myRef.setValue("Hello")
+
         delay(3000)
         val currentUser = auth.currentUser
         if (currentUser != null) {
-            // Check user role in Realtime Database
             database.child("profiles").child(currentUser.uid).child("role").get()
                 .addOnSuccessListener { snapshot ->
                     val role = snapshot.getValue(String::class.java)
@@ -60,7 +64,6 @@ fun Splashscreen(
                     }
                 }
                 .addOnFailureListener {
-                    // Fallback to Start Screen if role check fails
                     navController.navigate(ROUTE_START) {
                         popUpTo(ROUTE_SPLASH) { inclusive = true }
                     }
