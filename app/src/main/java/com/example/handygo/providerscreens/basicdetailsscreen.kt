@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,14 +36,9 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.handygo.ProfileViewModel
 import com.example.handygo.navigation.ROUTE_LOCATION
-<<<<<<< HEAD
-import com.example.handygo.ui.theme.HANDYGOTheme
-import com.google.firebase.database.FirebaseDatabase
-=======
 import com.example.handygo.navigation.ROUTE_REGISTER_PROVIDER
 import com.example.handygo.ui.theme.HANDYGOTheme
-import androidx.compose.material.icons.filled.Map
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
+import com.google.firebase.database.FirebaseDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

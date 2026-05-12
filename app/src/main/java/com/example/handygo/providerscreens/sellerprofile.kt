@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,41 +29,25 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.handygo.ProfileViewModel
-<<<<<<< HEAD
-import com.google.firebase.database.FirebaseDatabase
-=======
-import com.example.handygo.ProviderPost
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SellerProfileScreen(
     navController: NavHostController, 
-<<<<<<< HEAD
     profileViewModel: ProfileViewModel = viewModel()
-=======
-    profileViewModel: ProfileViewModel = viewModel(),
-    sellerName: String? = null,
-    category: String = "Professional Service Provider"
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
 ) {
     val sellerName = profileViewModel.selectedSellerName.value.ifBlank { "Provider Name" }
     val category = profileViewModel.selectedSellerCategory.value.ifBlank { "Service Provider" }
     val location = profileViewModel.selectedSellerLocation.value.ifBlank { "Location Unknown" }
     val cost = profileViewModel.selectedSellerPrice.value.ifBlank { "Negotiable" }
+    val sellerId = profileViewModel.selectedSellerId.value
 
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     
-    // If no sellerName is passed, we show the current profile
-    val displayName = sellerName ?: profileViewModel.name.value
-    val displayLocation = if (sellerName == null) profileViewModel.location.value else "Nairobi, Kenya"
-    val displayBio = if (sellerName == null) profileViewModel.bio.value else "Professional services with guaranteed quality."
-    val profileImage = if (sellerName == null) profileViewModel.profileImageUri.value else null
-    val contact = if (sellerName == null) profileViewModel.contact.value else "+254 700 123 456"
-    
-    val myProducts = profileViewModel.marketplaceProducts.filter { sellerName == null || it.sellerName == sellerName || it.sellerName == "You" }
-    val myPosts = profileViewModel.providerPosts // In a real app, filter by sellerId
+    val myProducts = profileViewModel.marketplaceProducts.filter { it.sellerId == sellerId }
+    // Note: In a real app, you would fetch posts for this specific sellerId
+    val myPosts = profileViewModel.providerPosts 
 
     Scaffold(
         topBar = {
@@ -89,57 +74,26 @@ fun SellerProfileScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-<<<<<<< HEAD
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-=======
             // Profile Image
             Box(
                 modifier = Modifier
-                    .size(100.dp)
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
+                    .size(120.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-<<<<<<< HEAD
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Profile Picture",
                     modifier = Modifier.size(80.dp),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-=======
-                if (profileImage != null) {
-                    AsyncImage(
-                        model = profileImage,
-                        contentDescription = "Profile Picture",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Text(
-                        text = displayName.take(1).uppercase(),
-                        style = MaterialTheme.typography.displayMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-<<<<<<< HEAD
-            Text(text = sellerName, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFB300), modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "4.8 (Recent Rating)", fontSize = 14.sp, color = Color.Gray)
-=======
             Text(
-                text = displayName,
+                text = sellerName,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
@@ -154,47 +108,27 @@ fun SellerProfileScreen(
 
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
                 Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFB300), modifier = Modifier.size(18.dp))
-                Text(text = " 4.8 (150 reviews)", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                Text(text = " 4.8 (Recent Rating)", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Text(
-                text = displayBio,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Contact and Location Information
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
                 elevation = CardDefaults.cardElevation(2.dp)
             ) {
-                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    InfoRow(icon = Icons.Default.LocationOn, label = "Base Location", value = displayLocation)
-                    InfoRow(icon = Icons.Default.Phone, label = "Contact number", value = contact)
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    DetailRow(icon = Icons.Default.Build, label = "Service", value = category)
+                    DetailRow(icon = Icons.Default.LocationOn, label = "Location", value = location)
+                    DetailRow(icon = Icons.Default.AttachMoney, label = "Starting Price", value = cost)
                 }
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-<<<<<<< HEAD
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    DetailRow(icon = Icons.Default.Build, label = "Service", value = category)
-                    DetailRow(icon = Icons.Default.LocationOn, label = "Location", value = location)
-                    DetailRow(icon = Icons.Default.AttachMoney, label = "Starting Price", value = cost)
-=======
             // Marketplace Items Section
             if (myProducts.isNotEmpty()) {
                 Text(
@@ -239,7 +173,7 @@ fun SellerProfileScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // Service Posts Section
+            // Service Posts Section (Simplified for now)
             if (myPosts.isNotEmpty()) {
                 Text(
                     text = "Service Updates & Posts",
@@ -283,7 +217,6 @@ fun SellerProfileScreen(
                             }
                         }
                     }
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                 }
             }
 
@@ -291,14 +224,6 @@ fun SellerProfileScreen(
 
             Button(
                 onClick = { 
-<<<<<<< HEAD
-                    // SENDING DATA TO FIREBASE
-                    val database = FirebaseDatabase.getInstance()
-                    val myRef = database.getReference("users")
-                    myRef.setValue("Hello")
-
-=======
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                     val newNotification = ServiceRequest(
                         id = System.currentTimeMillis().toString(),
                         userName = profileViewModel.name.value,
@@ -306,13 +231,8 @@ fun SellerProfileScreen(
                         description = "New Booking Request",
                         time = "Just now"
                     )
-<<<<<<< HEAD
-                    profileViewModel.addServiceRequest(newNotification, profileViewModel.selectedSellerId.value)
+                    profileViewModel.addServiceRequest(newNotification, sellerId)
                     Toast.makeText(context, "Booking Sent to $sellerName!", Toast.LENGTH_LONG).show()
-=======
-                    profileViewModel.addServiceRequest(newNotification)
-                    Toast.makeText(context, "Booking Sent to $displayName!", Toast.LENGTH_LONG).show()
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(12.dp),

@@ -43,7 +43,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 
 data class MarketProduct(
-<<<<<<< HEAD
     val id: String = "",
     val name: String = "",
     val description: String = "",
@@ -51,17 +50,8 @@ data class MarketProduct(
     val location: String = "",
     val sellerName: String = "",
     val sellerId: String = "",
-    val imageRes: Int? = null
-=======
-    val id: String,
-    val name: String,
-    val description: String,
-    val price: String,
-    val location: String,
-    val sellerName: String,
     val imageRes: Int? = null,
     val imageUri: String? = null
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,19 +60,9 @@ fun ProviderHomeScreen(
     navHostController: NavHostController,
     profileViewModel: ProfileViewModel = viewModel()
 ) {
-    // Adding requested Firebase logic
-    LaunchedEffect(Unit) {
-        val database = FirebaseDatabase.getInstance()
-        val myRef = database.getReference("users")
-        myRef.setValue("Hello")
-    }
-
     val marketplaceProducts = profileViewModel.marketplaceProducts
-<<<<<<< HEAD
     val requestsCount = profileViewModel.serviceRequests.size
-=======
     val providerPosts = profileViewModel.providerPosts
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
     var showPostDialog by remember { mutableStateOf(false) }
     var showServiceDialog by remember { mutableStateOf(false) }
 
@@ -243,11 +223,6 @@ fun ProviderHomeScreen(
         PostProductDialog(
             onDismiss = { showPostDialog = false },
             onPost = { newProduct ->
-                // Also adding to post product action
-                val database = FirebaseDatabase.getInstance()
-                val myRef = database.getReference("users")
-                myRef.setValue("Hello")
-
                 profileViewModel.addProduct(newProduct)
                 showPostDialog = false
             }
@@ -447,17 +422,14 @@ fun PostProductDialog(onDismiss: () -> Unit, onPost: (MarketProduct) -> Unit) {
     var description by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
-<<<<<<< HEAD
-    val auth = FirebaseAuth.getInstance()
-=======
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    val auth = FirebaseAuth.getInstance()
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         selectedImageUri = uri
     }
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -507,11 +479,8 @@ fun PostProductDialog(onDismiss: () -> Unit, onPost: (MarketProduct) -> Unit) {
                             price = price,
                             location = location,
                             sellerName = "You",
-<<<<<<< HEAD
-                            sellerId = auth.currentUser?.uid ?: ""
-=======
+                            sellerId = auth.currentUser?.uid ?: "",
                             imageUri = selectedImageUri?.toString()
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                         ))
                     }
                 },

@@ -6,16 +6,13 @@ import androidx.lifecycle.ViewModel
 import com.example.handygo.providerscreens.MarketProduct
 import com.example.handygo.providerscreens.ServiceRequest
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 
 data class ProviderPost(
-    val id: String,
-    val description: String,
-    val location: String,
-    val time: String,
+    val id: String = "",
+    val description: String = "",
+    val location: String = "",
+    val time: String = "",
     val imageUri: String? = null
 )
 
@@ -45,10 +42,12 @@ class ProfileViewModel : ViewModel() {
     val marketplaceProducts = mutableStateListOf<MarketProduct>()
     val serviceRequests = mutableStateListOf<ServiceRequest>()
     val allProviders = mutableStateListOf<Map<String, Any>>()
+    val providerPosts = mutableStateListOf<ProviderPost>()
 
     private val authListener = FirebaseAuth.AuthStateListener {
         fetchProfile()
         fetchServiceRequests()
+        fetchProviderPosts()
     }
 
     init {
@@ -122,6 +121,20 @@ class ProfileViewModel : ViewModel() {
         })
     }
 
+    fun fetchProviderPosts() {
+        val userId = auth.currentUser?.uid ?: return
+        database.child("posts").child(userId).addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                providerPosts.clear()
+                for (child in snapshot.children) {
+                    val post = child.getValue(ProviderPost::class.java)
+                    if (post != null) providerPosts.add(post)
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        })
+    }
+
     fun updateProfile(newName: String, newContact: String, newLocation: String, newBio: String, newCategory: String) {
         val userId = auth.currentUser?.uid ?: return
         val profileMap = mapOf(
@@ -131,37 +144,17 @@ class ProfileViewModel : ViewModel() {
             "bio" to newBio,
             "category" to newCategory
         )
-<<<<<<< HEAD
         database.child("profiles").child(userId).updateChildren(profileMap)
-=======
-    )
-
-    // Provider Posts State
-    val providerPosts = mutableStateListOf(
-        ProviderPost(
-            "1", "Available for emergency plumbing services in Westlands.", 
-            "Westlands, Nairobi", "10 mins ago"
-        )
-    )
-
-    // Service Requests (Notifications for Provider)
-    val serviceRequests = mutableStateListOf(
-        ServiceRequest("1", "John Doe", "Plumbing", "Leaking tap in kitchen", "2 mins ago"),
-        ServiceRequest("2", "Jane Smith", "Electrical", "Socket not working", "1 hour ago")
-    )
-
-    fun updateProfile(newName: String, newContact: String, newLocation: String, newBio: String) {
-        name.value = newName
-        contact.value = newContact
-        location.value = newLocation
-        bio.value = newBio
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
     }
 
     fun updateLocation(newLocation: String, newLat: Double, newLng: Double) {
+        val userId = auth.currentUser?.uid ?: return
         location.value = newLocation
         latitude.value = newLat
         longitude.value = newLng
+        database.child("profiles").child(userId).child("location").setValue(newLocation)
+        database.child("profiles").child(userId).child("latitude").setValue(newLat)
+        database.child("profiles").child(userId).child("longitude").setValue(newLng)
     }
 
     fun addProduct(product: MarketProduct) {
@@ -170,7 +163,13 @@ class ProfileViewModel : ViewModel() {
         database.child("marketplace").child(productId).setValue(newProduct)
     }
 
-<<<<<<< HEAD
+    fun addPost(post: ProviderPost) {
+        val userId = auth.currentUser?.uid ?: return
+        val postId = database.child("posts").child(userId).push().key ?: return
+        val newPost = post.copy(id = postId)
+        database.child("posts").child(userId).child(postId).setValue(newPost)
+    }
+
     fun addServiceRequest(request: ServiceRequest, providerId: String) {
         if (providerId.isBlank()) return
         val requestId = database.child("requests").child(providerId).push().key ?: return
@@ -181,13 +180,5 @@ class ProfileViewModel : ViewModel() {
     fun removeServiceRequest(requestId: String) {
         val userId = auth.currentUser?.uid ?: return
         database.child("requests").child(userId).child(requestId).removeValue()
-=======
-    fun addPost(post: ProviderPost) {
-        providerPosts.add(0, post)
-    }
-
-    fun addServiceRequest(request: ServiceRequest) {
-        serviceRequests.add(0, request)
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
     }
 }

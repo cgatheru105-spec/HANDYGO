@@ -25,11 +25,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.handygo.ProfileViewModel
-import com.example.handygo.navigation.ROUTE_REGISTER_PROVIDER
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.firebase.database.FirebaseDatabase
 import com.google.maps.android.compose.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -248,14 +246,6 @@ fun LocationScreen(
         // FINISH BUTTON
         Button(
             onClick = {
-<<<<<<< HEAD
-                // SENDING DATA TO FIREBASE
-                val database = FirebaseDatabase.getInstance()
-                val myRef = database.getReference("users")
-                myRef.setValue("Hello")
-
-                navController.navigate(ROUTE_REGISTER_PROVIDER)
-=======
                 // Save to ViewModel
                 profileViewModel.updateLocation(
                     newLocation = if (addressName.isNotEmpty()) addressName else "Pinned Location",
@@ -265,7 +255,6 @@ fun LocationScreen(
                 
                 // Return to registration or previous screen
                 navController.popBackStack()
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)

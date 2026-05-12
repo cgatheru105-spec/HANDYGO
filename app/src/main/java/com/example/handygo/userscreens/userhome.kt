@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.handygo.ProfileViewModel
 import com.example.handygo.navigation.ROUTE_SEARCH
 import com.example.handygo.navigation.ROUTE_SELLER_PROFILE
@@ -38,7 +39,15 @@ import com.example.handygo.ui.theme.HANDYGOTheme
 import com.google.firebase.database.FirebaseDatabase
 
 data class Category(val name: String, val icon: ImageVector)
-data class FeaturedService(val id: String, val name: String, val provider: String, val price: String, val rating: Double, val providerId: String = "")
+data class FeaturedService(
+    val id: String, 
+    val name: String, 
+    val provider: String, 
+    val price: String, 
+    val rating: Double, 
+    val providerId: String = "",
+    val profileImage: String? = null
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -194,6 +203,7 @@ fun UserHomeScreen(
                     val category = providerData["category"] as? String ?: "Service Provider"
                     val id = providerData["id"] as? String ?: ""
                     val location = providerData["location"] as? String ?: "Nairobi"
+                    val profileImage = providerData["profileImage"] as? String
                     
                     FeaturedServiceCard(
                         FeaturedService(
@@ -202,7 +212,8 @@ fun UserHomeScreen(
                             provider = name,
                             price = "Negotiable",
                             rating = 4.8,
-                            providerId = id
+                            providerId = id,
+                            profileImage = profileImage
                         )
                     ) {
                         profileViewModel.selectedSellerName.value = name
@@ -294,11 +305,20 @@ fun FeaturedServiceCard(service: FeaturedService, onClick: () -> Unit) {
                     .background(MaterialTheme.colorScheme.secondaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Default.Build,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.secondary
-                )
+                if (service.profileImage != null) {
+                    AsyncImage(
+                        model = service.profileImage,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        Icons.Default.Build,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -376,7 +396,14 @@ fun UserMarketProductCard(product: MarketProduct, onClick: () -> Unit) {
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                if (product.imageRes != null) {
+                if (product.imageUri != null) {
+                    AsyncImage(
+                        model = product.imageUri,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else if (product.imageRes != null) {
                     Image(
                         painter = painterResource(id = product.imageRes),
                         contentDescription = null,

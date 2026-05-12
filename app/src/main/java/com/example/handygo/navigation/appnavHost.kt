@@ -26,25 +26,15 @@ fun AppNavHost(
         composable(ROUTE_SPLASH) { Splashscreen(navController, profileViewModel) }
         composable(ROUTE_START) { StartScreen(navController) }
         composable(ROUTE_LOGIN) { LoginScreen(navController) }
-<<<<<<< HEAD
         composable(ROUTE_REGISTER_USER) { RegisterUserScreen(navController, profileViewModel) }
         composable(ROUTE_REGISTER_PROVIDER) { RegisterProviderScreen(navController, profileViewModel) }
         composable(ROUTE_USER_HOME) { UserHomeScreen(navController, profileViewModel) }
-=======
-        composable(ROUTE_REGISTER_USER) { RegisterUserScreen(navController) }
-        composable(ROUTE_REGISTER_PROVIDER) { RegisterProviderScreen(navController, profileViewModel) }
-        composable(ROUTE_USER_HOME) { UserHomeScreen(navController) }
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
         composable(ROUTE_PROVIDER_HOME) { ProviderHomeScreen(navController, profileViewModel) }
         composable(ROUTE_USER_PROFILE) { UserProfileScreen(navController, profileViewModel) }
         composable(ROUTE_ADD_SERVICES) { ServicesScreen(navController, profileViewModel) }
         composable(ROUTE_BASIC_DETAILS) { BasicDetailsScreen(navController, profileViewModel) }
-<<<<<<< HEAD
-        composable(ROUTE_LOCATION) { LocationScreen(navController) }
+        composable(ROUTE_LOCATION) { LocationScreen(navController, profileViewModel) }
         composable(ROUTE_PROVIDER_DASHBOARD) { ProviderDashboardScreen(navController, profileViewModel) }
-=======
-        composable(ROUTE_PROVIDER_DASHBOARD) { ProviderDashboardScreen(navController) }
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
         composable(ROUTE_SELLER_PROFILE) { SellerProfileScreen(navController, profileViewModel) }
         composable(ROUTE_SETTINGS) { 
             SettingsScreen(
@@ -53,11 +43,6 @@ fun AppNavHost(
                 onThemeChange = onThemeChange
             ) 
         }
-<<<<<<< HEAD
         composable(ROUTE_SEARCH) { SearchScreen(navController, profileViewModel) }
-=======
-        composable(ROUTE_SEARCH) { SearchScreen(navController) }
-        composable(ROUTE_LOCATION) { LocationScreen(navController, profileViewModel) }
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
     }
 }

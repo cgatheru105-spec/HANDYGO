@@ -22,7 +22,6 @@ import com.example.handygo.AuthViewModel
 import com.example.handygo.ProfileViewModel
 import com.example.handygo.navigation.ROUTE_LOGIN
 import com.example.handygo.navigation.ROUTE_PROVIDER_HOME
-import com.google.firebase.database.FirebaseDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,16 +29,11 @@ fun RegisterProviderScreen(
     navController: NavHostController,
     profileViewModel: ProfileViewModel = viewModel()
 ) {
-<<<<<<< HEAD
-=======
     val context = LocalContext.current
-    val authViewModel = AuthViewModel(navController, context)
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
+    val authViewModel = remember { AuthViewModel(navController, context) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    val context = LocalContext.current
-    val authViewModel = remember { AuthViewModel(navController, context) }
 
     var emailError by remember { mutableStateOf(false) }
 
@@ -139,33 +133,24 @@ fun RegisterProviderScreen(
 
                 Button(
                     onClick = {
-<<<<<<< HEAD
-                        val database = FirebaseDatabase.getInstance()
-                        val myRef = database.getReference("users")
-                        myRef.setValue("Hello")
-
-                        val extraData = mapOf(
-                            "name" to profileViewModel.name.value,
-                            "contact" to profileViewModel.contact.value,
-                            "location" to profileViewModel.location.value,
-                            "bio" to profileViewModel.bio.value,
-                            "category" to profileViewModel.myCategory.value
-                        )
-                        authViewModel.register(email, password, confirmPassword, "provider", extraData)
-=======
-                        authViewModel.registerProvider(
-                            email = email,
-                            pass = password,
-                            confpass = confirmPassword,
-                            name = profileViewModel.name.value,
-                            contact = profileViewModel.contact.value,
-                            location = profileViewModel.location.value,
-                            latitude = profileViewModel.latitude.value,
-                            longitude = profileViewModel.longitude.value,
-                            bio = profileViewModel.bio.value,
-                            profileImage = profileViewModel.profileImageUri.value
-                        )
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
+                        if (!isValidEmail(email)) {
+                            emailError = true
+                        } else if (password != confirmPassword) {
+                            Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                        } else {
+                            authViewModel.registerProvider(
+                                email = email,
+                                pass = password,
+                                confpass = confirmPassword,
+                                name = profileViewModel.name.value,
+                                contact = profileViewModel.contact.value,
+                                location = profileViewModel.location.value,
+                                latitude = profileViewModel.latitude.value,
+                                longitude = profileViewModel.longitude.value,
+                                bio = profileViewModel.bio.value,
+                                profileImage = profileViewModel.profileImageUri.value
+                            )
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -183,17 +168,11 @@ fun RegisterProviderScreen(
                     )
                 }
 
-<<<<<<< HEAD
-                TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
-                    Text(
-                        text = "Already have an account? Login here",
-=======
                 Spacer(modifier = Modifier.height(8.dp))
 
                 TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
                     Text(
                         text = "Already have an account? Login",
->>>>>>> 82772831ccf908dab54a6e848f21f2de22dbdd5f
                         color = MaterialTheme.colorScheme.secondary
                     )
                 }
