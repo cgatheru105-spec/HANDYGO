@@ -18,9 +18,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.database.FirebaseDatabase
 <<<<<<< HEAD
+<<<<<<< HEAD
 import com.google.firebase.database.DataSnapshot
 import com.google.android.gms.tasks.Task
 =======
+=======
+import com.google.firebase.storage.FirebaseStorage
+import android.net.Uri
+>>>>>>> 46506c0 (Integrated Firebase Storage for public image URLs, updated ViewModels for Uri support, and added image pickers to registration and product posting)
 
 // Data models are now in com.example.handygo.data
 >>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
@@ -29,6 +34,7 @@ class AuthViewModel(var navController: NavHostController, var context: Context) 
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
 
 <<<<<<< HEAD
     fun login(email: String, pass: String) {
@@ -103,10 +109,14 @@ class AuthViewModel(var navController: NavHostController, var context: Context) 
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     fun registerUser(email: String, pass: String, confpass: String) {
 =======
     fun registerUser(email: String, pass: String, confpass: String, name: String, contact: String, location: String, bio: String) {
 >>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
+=======
+    fun registerUser(email: String, pass: String, confpass: String, name: String, contact: String, location: String, bio: String, imageUri: Uri? = null) {
+>>>>>>> 46506c0 (Integrated Firebase Storage for public image URLs, updated ViewModels for Uri support, and added image pickers to registration and product posting)
         if (email.isBlank() || pass.isBlank() || confpass.isBlank()) {
             Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
             return
@@ -148,31 +158,16 @@ class AuthViewModel(var navController: NavHostController, var context: Context) 
         auth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener {
             if (it.isSuccessful) {
                 val firebaseUser = auth.currentUser
-                firebaseUser?.let {
-                    val uid = it.uid
-                    val profileRef = database.getReference("profiles").child("users").child(uid)
-
-                    val profileMap = mapOf(
-                        "uid" to uid,
-                        "email" to email,
-                        "name" to name,
-                        "contact" to contact,
-                        "location" to location,
-                        "bio" to bio,
-                        "role" to "user"
-                    )
-
-                    profileRef.setValue(profileMap)
-                        .addOnSuccessListener {
-                            Toast.makeText(context, "User Registered and data saved!", Toast.LENGTH_LONG).show()
-                            navController.navigate(ROUTE_USER_HOME) {
-                                popUpTo(ROUTE_LOGIN) { inclusive = true }
-                            }
+                firebaseUser?.let { user ->
+                    val uid = user.uid
+                    
+                    if (imageUri != null) {
+                        uploadImage("profile_images/$uid.jpg", imageUri) { downloadUrl ->
+                            saveProfileToDatabase(uid, email, name, contact, location, bio, "user", downloadUrl)
                         }
-                        .addOnFailureListener {
-                            Toast.makeText(context, "Failed to save user data: ${it.message}", Toast.LENGTH_LONG).show()
-                            firebaseUser.delete()
-                        }
+                    } else {
+                        saveProfileToDatabase(uid, email, name, contact, location, bio, "user", null)
+                    }
                 }
             } else {
                 val message = if (it.exception is FirebaseAuthUserCollisionException) {
@@ -186,6 +181,62 @@ class AuthViewModel(var navController: NavHostController, var context: Context) 
         }
     }
 
+    private fun saveProfileToDatabase(
+        uid: String,
+        email: String,
+        name: String,
+        contact: String,
+        location: String,
+        bio: String,
+        role: String,
+        profileImage: String?,
+        latitude: Double? = null,
+        longitude: Double? = null,
+        category: String? = null
+    ) {
+        val node = if (role == "provider") "providers" else "users"
+        val profileRef = database.getReference("profiles").child(node).child(uid)
+
+        val profileMap = mutableMapOf<String, Any>(
+            "uid" to uid,
+            "email" to email,
+            "name" to name,
+            "contact" to contact,
+            "location" to location,
+            "bio" to bio,
+            "role" to role
+        )
+        profileImage?.let { profileMap["profileImage"] = it }
+        latitude?.let { profileMap["latitude"] = it }
+        longitude?.let { profileMap["longitude"] = it }
+        category?.let { profileMap["category"] = it }
+
+        profileRef.setValue(profileMap)
+            .addOnSuccessListener {
+                Toast.makeText(context, "${role.replaceFirstChar { it.uppercase() }} Registered and data saved!", Toast.LENGTH_LONG).show()
+                val route = if (role == "provider") ROUTE_PROVIDER_HOME else ROUTE_USER_HOME
+                navController.navigate(route) {
+                    popUpTo(ROUTE_LOGIN) { inclusive = true }
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(context, "Failed to save data: ${it.message}", Toast.LENGTH_LONG).show()
+            }
+    }
+
+    private fun uploadImage(path: String, uri: Uri, onSuccess: (String) -> Unit) {
+        val ref = storage.reference.child(path)
+        ref.putFile(uri)
+            .addOnSuccessListener {
+                ref.downloadUrl.addOnSuccessListener { downloadUri: Uri ->
+                    onSuccess(downloadUri.toString())
+                }
+            }
+            .addOnFailureListener { exception: Exception ->
+                Toast.makeText(context, "Image upload failed: ${exception.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
     fun registerProvider(
         email: String,
         pass: String,
@@ -196,7 +247,7 @@ class AuthViewModel(var navController: NavHostController, var context: Context) 
         latitude: Double,
         longitude: Double,
         bio: String,
-        profileImage: String?,
+        profileImageUri: Uri?,
         category: String
     ) {
         if (email.isBlank() || pass.isBlank() || confpass.isBlank()) {
@@ -242,35 +293,16 @@ class AuthViewModel(var navController: NavHostController, var context: Context) 
         auth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener {
             if (it.isSuccessful) {
                 val firebaseUser = auth.currentUser
-                firebaseUser?.let {
-                    val uid = it.uid
-                    val profileRef = database.getReference("profiles").child("providers").child(uid)
-
-                    val profileMap = mapOf(
-                        "uid" to uid,
-                        "email" to email,
-                        "name" to name,
-                        "contact" to contact,
-                        "location" to location,
-                        "latitude" to latitude,
-                        "longitude" to longitude,
-                        "bio" to bio,
-                        "profileImage" to (profileImage ?: ""),
-                        "category" to category,
-                        "role" to "provider"
-                    )
-
-                    profileRef.setValue(profileMap)
-                        .addOnSuccessListener {
-                            Toast.makeText(context, "Provider Registered and data saved!", Toast.LENGTH_LONG).show()
-                            navController.navigate(ROUTE_PROVIDER_HOME) {
-                                popUpTo(ROUTE_LOGIN) { inclusive = true }
-                            }
+                firebaseUser?.let { user ->
+                    val uid = user.uid
+                    
+                    if (profileImageUri != null) {
+                        uploadImage("profile_images/$uid.jpg", profileImageUri) { downloadUrl ->
+                            saveProfileToDatabase(uid, email, name, contact, location, bio, "provider", downloadUrl, latitude, longitude, category)
                         }
-                        .addOnFailureListener {
-                            Toast.makeText(context, "Failed to save provider data: ${it.message}", Toast.LENGTH_LONG).show()
-                            firebaseUser.delete()
-                        }
+                    } else {
+                        saveProfileToDatabase(uid, email, name, contact, location, bio, "provider", null, latitude, longitude, category)
+                    }
                 }
             } else {
                 val message = if (it.exception is FirebaseAuthUserCollisionException) {

@@ -35,10 +35,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.handygo.ProfileViewModel
-<<<<<<< HEAD
-import com.example.handygo.navigation.ROUTE_LOCATION
-=======
->>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
+
 import com.example.handygo.navigation.ROUTE_REGISTER_PROVIDER
 import com.example.handygo.ui.theme.HANDYGOTheme
 import com.google.firebase.database.FirebaseDatabase
@@ -69,7 +66,7 @@ fun BasicDetailsScreen(
     ) { uri: Uri? ->
         imageUri = uri
         if (uri != null) {
-            profileViewModel.profileImageUri.value = uri.toString()
+            profileViewModel.profileImageUri.value = uri
         }
     }
 

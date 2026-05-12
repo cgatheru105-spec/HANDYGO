@@ -221,10 +221,17 @@ fun ProviderHomeScreen(
 
     if (showPostDialog) {
         PostProductDialog(
+            profileViewModel = profileViewModel,
             onDismiss = { showPostDialog = false },
+<<<<<<< HEAD
             onPost = { newProduct ->
                 profileViewModel.addProduct(newProduct)
+=======
+            onPost = { newProduct, imageUri ->
+                profileViewModel.addProduct(newProduct, imageUri)
+>>>>>>> 46506c0 (Integrated Firebase Storage for public image URLs, updated ViewModels for Uri support, and added image pickers to registration and product posting)
                 showPostDialog = false
+                navHostController.navigate(ROUTE_PROVIDER_DASHBOARD)
             }
         )
     }
@@ -417,7 +424,11 @@ fun MarketProductCard(product: MarketProduct, onClick: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PostProductDialog(onDismiss: () -> Unit, onPost: (MarketProduct) -> Unit) {
+fun PostProductDialog(
+    profileViewModel: ProfileViewModel,
+    onDismiss: () -> Unit, 
+    onPost: (MarketProduct, Uri?) -> Unit
+) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
@@ -478,10 +489,10 @@ fun PostProductDialog(onDismiss: () -> Unit, onPost: (MarketProduct) -> Unit) {
                             description = description,
                             price = price,
                             location = location,
-                            sellerName = "You",
+                            sellerName = profileViewModel.name.value,
                             sellerId = auth.currentUser?.uid ?: "",
                             imageUri = selectedImageUri?.toString()
-                        ))
+                        ), selectedImageUri)
                     }
                 },
                 enabled = name.isNotBlank() && price.isNotBlank()

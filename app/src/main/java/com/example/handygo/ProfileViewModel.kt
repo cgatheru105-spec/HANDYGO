@@ -6,7 +6,16 @@ import androidx.lifecycle.ViewModel
 import com.example.handygo.providerscreens.MarketProduct
 import com.example.handygo.providerscreens.ServiceRequest
 import com.google.firebase.auth.FirebaseAuth
+<<<<<<< HEAD
 import com.google.firebase.database.*
+=======
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.FirebaseStorage
+import android.net.Uri
+>>>>>>> 46506c0 (Integrated Firebase Storage for public image URLs, updated ViewModels for Uri support, and added image pickers to registration and product posting)
 
 data class ProviderPost(
     val id: String = "",
@@ -19,6 +28,7 @@ data class ProviderPost(
 class ProfileViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseDatabase.getInstance().getReference()
+    private val storage = FirebaseStorage.getInstance()
 
     // Profile State
     var name = mutableStateOf("User Name")
@@ -29,7 +39,7 @@ class ProfileViewModel : ViewModel() {
     var bio = mutableStateOf("I need quick and reliable services.")
     var myCategory = mutableStateOf("General Provider")
     var role = mutableStateOf("user")
-    var profileImageUri = mutableStateOf<String?>(null)
+    var profileImageUri = mutableStateOf<Uri?>(null)
 
     // Selected Seller for Details View
     var selectedSellerName = mutableStateOf("")
@@ -92,6 +102,8 @@ class ProfileViewModel : ViewModel() {
         bio.value = snapshot.child("bio").getValue(String::class.java) ?: ""
         myCategory.value = snapshot.child("category").getValue(String::class.java) ?: "General"
         role.value = snapshot.child("role").getValue(String::class.java) ?: "user"
+        val img = snapshot.child("profileImage").getValue(String::class.java)
+        profileImageUri.value = if (img != null) Uri.parse(img) else null
     }
 
     private fun fetchMarketplace() {
@@ -136,6 +148,7 @@ class ProfileViewModel : ViewModel() {
         })
     }
 
+<<<<<<< HEAD
     fun fetchProviderPosts() {
         val userId = auth.currentUser?.uid ?: return
         database.child("posts").child(userId).addValueEventListener(object : ValueEventListener {
@@ -151,8 +164,22 @@ class ProfileViewModel : ViewModel() {
     }
 
     fun updateProfile(newName: String, newContact: String, newLocation: String, newBio: String, newCategory: String) {
+=======
+    fun updateProfile(newName: String, newContact: String, newLocation: String, newBio: String, newCategory: String, newImageUri: Uri? = null) {
+>>>>>>> 46506c0 (Integrated Firebase Storage for public image URLs, updated ViewModels for Uri support, and added image pickers to registration and product posting)
         val userId = auth.currentUser?.uid ?: return
-        val profileMap = mapOf(
+        
+        if (newImageUri != null && !newImageUri.toString().startsWith("http")) {
+            uploadImage("profile_images/$userId.jpg", newImageUri) { downloadUrl ->
+                saveProfileData(userId, newName, newContact, newLocation, newBio, newCategory, downloadUrl)
+            }
+        } else {
+            saveProfileData(userId, newName, newContact, newLocation, newBio, newCategory, newImageUri?.toString())
+        }
+    }
+
+    private fun saveProfileData(userId: String, newName: String, newContact: String, newLocation: String, newBio: String, newCategory: String, profileImageUrl: String?) {
+        val profileMap = mutableMapOf<String, Any>(
             "name" to newName,
             "contact" to newContact,
             "location" to newLocation,
@@ -160,20 +187,37 @@ class ProfileViewModel : ViewModel() {
             "category" to newCategory
         )
 <<<<<<< HEAD
+<<<<<<< HEAD
         database.child("profiles").child(userId).updateChildren(profileMap)
 =======
+=======
+        profileImageUrl?.let { profileMap["profileImage"] = it }
+>>>>>>> 46506c0 (Integrated Firebase Storage for public image URLs, updated ViewModels for Uri support, and added image pickers to registration and product posting)
         
-        // Update in correct node based on current role
         val node = if (role.value == "provider") "providers" else "users"
         database.child("profiles").child(node).child(userId).updateChildren(profileMap)
         
-        // Also update local state
+        // Update local state
         name.value = newName
         contact.value = newContact
         location.value = newLocation
         bio.value = newBio
         myCategory.value = newCategory
+<<<<<<< HEAD
 >>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
+=======
+        if (profileImageUrl != null) profileImageUri.value = Uri.parse(profileImageUrl)
+    }
+
+    private fun uploadImage(path: String, uri: Uri, onSuccess: (String) -> Unit) {
+        val ref = storage.reference.child(path)
+        ref.putFile(uri)
+            .addOnSuccessListener {
+                ref.downloadUrl.addOnSuccessListener { downloadUri ->
+                    onSuccess(downloadUri.toString())
+                }
+            }
+>>>>>>> 46506c0 (Integrated Firebase Storage for public image URLs, updated ViewModels for Uri support, and added image pickers to registration and product posting)
     }
 
     fun updateLocation(newLocation: String, newLat: Double, newLng: Double) {
@@ -199,10 +243,18 @@ class ProfileViewModel : ViewModel() {
 >>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
     }
 
-    fun addProduct(product: MarketProduct) {
+    fun addProduct(product: MarketProduct, imageUri: Uri? = null) {
         val productId = database.child("marketplace").push().key ?: return
-        val newProduct = product.copy(id = productId)
-        database.child("marketplace").child(productId).setValue(newProduct)
+        
+        if (imageUri != null) {
+            uploadImage("product_images/$productId.jpg", imageUri) { downloadUrl ->
+                val newProduct = product.copy(id = productId, imageUri = downloadUrl)
+                database.child("marketplace").child(productId).setValue(newProduct)
+            }
+        } else {
+            val newProduct = product.copy(id = productId)
+            database.child("marketplace").child(productId).setValue(newProduct)
+        }
     }
 
     fun addPost(post: ProviderPost) {

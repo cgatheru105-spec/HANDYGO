@@ -314,9 +314,16 @@ fun FeaturedServiceCard(service: FeaturedService, onClick: () -> Unit) {
                     )
                 } else {
                     Icon(
+<<<<<<< HEAD
                         Icons.Default.Build,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.secondary
+=======
+                        Icons.Default.Person,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(40.dp)
+>>>>>>> 46506c0 (Integrated Firebase Storage for public image URLs, updated ViewModels for Uri support, and added image pickers to registration and product posting)
                     )
                 }
             }

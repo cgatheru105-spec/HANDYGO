@@ -1,13 +1,24 @@
 package com.example.handygo.providerscreens
 
 import android.util.Patterns
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -17,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.handygo.AuthViewModel
 import com.example.handygo.ProfileViewModel
 import com.example.handygo.navigation.ROUTE_LOGIN
@@ -44,6 +56,14 @@ fun RegisterProviderScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf(false) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri = uri
+        profileViewModel.profileImageUri.value = uri
+    }
 
     fun isValidEmail(target: CharSequence): Boolean {
         return Patterns.EMAIL_ADDRESS.matcher(target).matches()
@@ -86,6 +106,38 @@ fun RegisterProviderScreen(
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
+
+                // Profile Image Picker
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable { launcher.launch("image/*") },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (selectedImageUri != null) {
+                        AsyncImage(
+                            model = selectedImageUri,
+                            contentDescription = "Profile Picture",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Add Photo",
+                            modifier = Modifier.size(40.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                
+                Text(
+                    text = if (selectedImageUri == null) "Add Profile Photo" else "Photo Selected",
+                    fontSize = 12.sp,
+                    color = if (selectedImageUri == null) Color.Gray else MaterialTheme.colorScheme.primary
+                )
 
                 OutlinedTextField(
                     value = email,
@@ -175,7 +227,7 @@ fun RegisterProviderScreen(
                             latitude = profileViewModel.latitude.value,
                             longitude = profileViewModel.longitude.value,
                             bio = profileViewModel.bio.value,
-                            profileImage = profileViewModel.profileImageUri.value,
+                            profileImageUri = selectedImageUri,
                             category = profileViewModel.myCategory.value
                         )
 >>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289

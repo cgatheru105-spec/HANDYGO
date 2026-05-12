@@ -64,6 +64,7 @@ dependencies {
 >>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
+    implementation("com.google.firebase:firebase-storage-ktx")
     implementation(libs.coil.compose)
 
     testImplementation(libs.junit)

@@ -51,7 +51,7 @@ fun UserProfileScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         if (uri != null) {
-            profileViewModel.profileImageUri.value = uri.toString()
+            profileViewModel.profileImageUri.value = uri
         }
     }
 
@@ -204,7 +204,8 @@ fun UserProfileScreen(
 
                     profileViewModel.updateProfile(
                         name, contact, location, profileViewModel.bio.value,
-                        newCategory = profileViewModel.myCategory.value
+                        newCategory = profileViewModel.myCategory.value,
+                        newImageUri = profileViewModel.profileImageUri.value
                     )
                     Toast.makeText(context, "Profile Updated", Toast.LENGTH_SHORT).show()
                 },
