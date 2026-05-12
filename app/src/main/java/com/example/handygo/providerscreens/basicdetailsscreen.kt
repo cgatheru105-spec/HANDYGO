@@ -35,7 +35,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.handygo.ProfileViewModel
+<<<<<<< HEAD
 import com.example.handygo.navigation.ROUTE_LOCATION
+=======
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
 import com.example.handygo.navigation.ROUTE_REGISTER_PROVIDER
 import com.example.handygo.ui.theme.HANDYGOTheme
 import com.google.firebase.database.FirebaseDatabase
@@ -217,11 +220,6 @@ fun BasicDetailsScreen(
                 placeholder = { Text("City, Area") },
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
-                trailingIcon = {
-                    IconButton(onClick = { navController.navigate(ROUTE_LOCATION) }) {
-                        Icon(Icons.Default.Map, contentDescription = "Pick on map", tint = MaterialTheme.colorScheme.primary)
-                    }
-                },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -263,8 +261,8 @@ fun BasicDetailsScreen(
                     profileViewModel.bio.value = bio
                     profileViewModel.myCategory.value = category
 
-                    // CORRECTED NAVIGATION FLOW: Goes to Location Screen next
-                    navController.navigate(ROUTE_LOCATION)
+                    // NEW NAVIGATION FLOW: Goes directly to Register Provider screen
+                    navController.navigate(ROUTE_REGISTER_PROVIDER)
                 },
                 modifier = Modifier
                     .fillMaxWidth()

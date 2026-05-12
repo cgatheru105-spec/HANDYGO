@@ -63,17 +63,35 @@ class ProfileViewModel : ViewModel() {
 
     fun fetchProfile() {
         val userId = auth.currentUser?.uid ?: return
-        database.child("profiles").child(userId).addValueEventListener(object : ValueEventListener {
+        
+        // Try to fetch from users first
+        database.child("profiles").child("users").child(userId).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                name.value = snapshot.child("name").getValue(String::class.java) ?: "User Name"
-                contact.value = snapshot.child("contact").getValue(String::class.java) ?: ""
-                location.value = snapshot.child("location").getValue(String::class.java) ?: ""
-                bio.value = snapshot.child("bio").getValue(String::class.java) ?: ""
-                myCategory.value = snapshot.child("category").getValue(String::class.java) ?: "General"
-                role.value = snapshot.child("role").getValue(String::class.java) ?: "user"
+                if (snapshot.exists()) {
+                    updateLocalState(snapshot)
+                } else {
+                    // If not in users, check in providers
+                    database.child("profiles").child("providers").child(userId).addValueEventListener(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            if (snapshot.exists()) {
+                                updateLocalState(snapshot)
+                            }
+                        }
+                        override fun onCancelled(error: DatabaseError) {}
+                    })
+                }
             }
             override fun onCancelled(error: DatabaseError) {}
         })
+    }
+
+    private fun updateLocalState(snapshot: DataSnapshot) {
+        name.value = snapshot.child("name").getValue(String::class.java) ?: "User Name"
+        contact.value = snapshot.child("contact").getValue(String::class.java) ?: ""
+        location.value = snapshot.child("location").getValue(String::class.java) ?: ""
+        bio.value = snapshot.child("bio").getValue(String::class.java) ?: ""
+        myCategory.value = snapshot.child("category").getValue(String::class.java) ?: "General"
+        role.value = snapshot.child("role").getValue(String::class.java) ?: "user"
     }
 
     private fun fetchMarketplace() {
@@ -90,17 +108,14 @@ class ProfileViewModel : ViewModel() {
     }
 
     fun fetchProviders() {
-        database.child("profiles").addValueEventListener(object : ValueEventListener {
+        database.child("profiles").child("providers").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 allProviders.clear()
                 for (child in snapshot.children) {
-                    val roleVal = child.child("role").getValue(String::class.java)
-                    if (roleVal == "provider") {
-                        val providerData = child.value as? Map<String, Any> ?: continue
-                        val providerWithId = providerData.toMutableMap()
-                        providerWithId["id"] = child.key ?: ""
-                        allProviders.add(providerWithId)
-                    }
+                    val providerData = child.value as? Map<String, Any> ?: continue
+                    val providerWithId = providerData.toMutableMap()
+                    providerWithId["id"] = child.key ?: ""
+                    allProviders.add(providerWithId)
                 }
             }
             override fun onCancelled(error: DatabaseError) {}
@@ -144,7 +159,21 @@ class ProfileViewModel : ViewModel() {
             "bio" to newBio,
             "category" to newCategory
         )
+<<<<<<< HEAD
         database.child("profiles").child(userId).updateChildren(profileMap)
+=======
+        
+        // Update in correct node based on current role
+        val node = if (role.value == "provider") "providers" else "users"
+        database.child("profiles").child(node).child(userId).updateChildren(profileMap)
+        
+        // Also update local state
+        name.value = newName
+        contact.value = newContact
+        location.value = newLocation
+        bio.value = newBio
+        myCategory.value = newCategory
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
     }
 
     fun updateLocation(newLocation: String, newLat: Double, newLng: Double) {
@@ -152,9 +181,22 @@ class ProfileViewModel : ViewModel() {
         location.value = newLocation
         latitude.value = newLat
         longitude.value = newLng
+<<<<<<< HEAD
         database.child("profiles").child(userId).child("location").setValue(newLocation)
         database.child("profiles").child(userId).child("latitude").setValue(newLat)
         database.child("profiles").child(userId).child("longitude").setValue(newLng)
+=======
+        
+        val userId = auth.currentUser?.uid ?: return
+        val locationMap = mapOf(
+            "location" to newLocation,
+            "latitude" to newLat,
+            "longitude" to newLng
+        )
+        // Only providers typically need coordinates, but we'll update in the correct node
+        val node = if (role.value == "provider") "providers" else "users"
+        database.child("profiles").child(node).child(userId).updateChildren(locationMap)
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
     }
 
     fun addProduct(product: MarketProduct) {
@@ -164,10 +206,16 @@ class ProfileViewModel : ViewModel() {
     }
 
     fun addPost(post: ProviderPost) {
+<<<<<<< HEAD
         val userId = auth.currentUser?.uid ?: return
         val postId = database.child("posts").child(userId).push().key ?: return
         val newPost = post.copy(id = postId)
         database.child("posts").child(userId).child(postId).setValue(newPost)
+=======
+        val postId = database.child("posts").push().key ?: return
+        database.child("posts").child(postId).setValue(post)
+        providerPosts.add(0, post)
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
     }
 
     fun addServiceRequest(request: ServiceRequest, providerId: String) {

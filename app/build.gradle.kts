@@ -55,8 +55,13 @@ dependencies {
 
     implementation(libs.material)
     
+<<<<<<< HEAD
     // Firebase and Image Loading
     implementation(platform("com.google.firebase:firebase-bom:34.13.0"))
+=======
+    // Firebase dependencies
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
     implementation(libs.coil.compose)

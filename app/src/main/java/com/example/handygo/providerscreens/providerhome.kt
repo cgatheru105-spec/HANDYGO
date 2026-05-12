@@ -436,10 +436,10 @@ fun PostProductDialog(onDismiss: () -> Unit, onPost: (MarketProduct) -> Unit) {
         title = { Text("Post New Product", fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Product Name") })
-                OutlinedTextField(value = description, onValueChange = { description = it }, label = { Text("Description") })
-                OutlinedTextField(value = price, onValueChange = { price = it }, label = { Text("Price (e.g. Ksh 500)") })
-                OutlinedTextField(value = location, onValueChange = { location = it }, label = { Text("Location") })
+                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Product Name") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = description, onValueChange = { description = it }, label = { Text("Description") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = price, onValueChange = { price = it }, label = { Text("Price (e.g. Ksh 500)") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = location, onValueChange = { location = it }, label = { Text("Location") }, modifier = Modifier.fillMaxWidth())
                 
                 Spacer(modifier = Modifier.height(8.dp))
 

@@ -13,9 +13,7 @@ import com.example.handygo.userscreens.*
 @Composable
 fun AppNavHost(
     navController: NavHostController = rememberNavController(),
-    startDestination: String = ROUTE_SPLASH,
-    isDarkTheme: Boolean,
-    onThemeChange: (Boolean) -> Unit
+    startDestination: String = ROUTE_SPLASH
 ) {
     val profileViewModel: ProfileViewModel = viewModel()
 
@@ -33,15 +31,14 @@ fun AppNavHost(
         composable(ROUTE_USER_PROFILE) { UserProfileScreen(navController, profileViewModel) }
         composable(ROUTE_ADD_SERVICES) { ServicesScreen(navController, profileViewModel) }
         composable(ROUTE_BASIC_DETAILS) { BasicDetailsScreen(navController, profileViewModel) }
+<<<<<<< HEAD
         composable(ROUTE_LOCATION) { LocationScreen(navController, profileViewModel) }
+=======
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
         composable(ROUTE_PROVIDER_DASHBOARD) { ProviderDashboardScreen(navController, profileViewModel) }
         composable(ROUTE_SELLER_PROFILE) { SellerProfileScreen(navController, profileViewModel) }
         composable(ROUTE_SETTINGS) { 
-            SettingsScreen(
-                navController = navController, 
-                isDarkTheme = isDarkTheme, 
-                onThemeChange = onThemeChange
-            ) 
+            SettingsScreen(navController = navController)
         }
         composable(ROUTE_SEARCH) { SearchScreen(navController, profileViewModel) }
     }

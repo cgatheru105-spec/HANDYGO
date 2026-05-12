@@ -30,11 +30,14 @@ fun RegisterUserScreen(
     navController: NavHostController,
     profileViewModel: ProfileViewModel = viewModel()
 ) {
+<<<<<<< HEAD
+=======
+    val context = LocalContext.current
+    val authViewModel = remember { AuthViewModel(navController, context) }
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    val context = LocalContext.current
-    val authViewModel = remember { AuthViewModel(navController, context) }
 
     var emailError by remember { mutableStateOf(false) }
 
@@ -136,10 +139,23 @@ fun RegisterUserScreen(
                     onClick = {
                         if (!isValidEmail(email)) {
                             emailError = true
+<<<<<<< HEAD
                         } else if (password != confirmPassword) {
                             Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
                         } else {
                             authViewModel.registerUser(email, password, confirmPassword)
+=======
+                        } else {
+                            authViewModel.registerUser(
+                                email = email,
+                                pass = password,
+                                confpass = confirmPassword,
+                                name = "New User",
+                                contact = "",
+                                location = "",
+                                bio = ""
+                            )
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
                         }
                     },
                     modifier = Modifier
@@ -158,11 +174,17 @@ fun RegisterUserScreen(
                     )
                 }
 
+<<<<<<< HEAD
                 Spacer(modifier = Modifier.height(8.dp))
 
                 TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
                     Text(
                         text = "Already have an account? Login",
+=======
+                TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
+                    Text(
+                        text = "Already have an account? Login here",
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
                         color = MaterialTheme.colorScheme.secondary
                     )
                 }

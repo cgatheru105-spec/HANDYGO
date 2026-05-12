@@ -29,6 +29,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.handygo.ProfileViewModel
+<<<<<<< HEAD
+=======
+import com.example.handygo.ProviderPost
+import com.google.firebase.database.FirebaseDatabase
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,9 +50,21 @@ fun SellerProfileScreen(
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     
+<<<<<<< HEAD
     val myProducts = profileViewModel.marketplaceProducts.filter { it.sellerId == sellerId }
     // Note: In a real app, you would fetch posts for this specific sellerId
     val myPosts = profileViewModel.providerPosts 
+=======
+    // In a real app, you might fetch more details based on sellerId
+    val displayName = sellerName
+    val displayLocation = location
+    val displayBio = "Professional services with guaranteed quality."
+    val profileImage = null // Could be fetched from Firebase
+    val contact = "+254 700 123 456" // Could be fetched from Firebase
+    
+    val myProducts = profileViewModel.marketplaceProducts.filter { it.sellerId == sellerId }
+    val myPosts = profileViewModel.providerPosts // In a real app, filter by sellerId
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
 
     Scaffold(
         topBar = {
@@ -77,17 +94,39 @@ fun SellerProfileScreen(
             // Profile Image
             Box(
                 modifier = Modifier
+<<<<<<< HEAD
                     .size(120.dp)
+=======
+                    .size(100.dp)
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
+<<<<<<< HEAD
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Profile Picture",
                     modifier = Modifier.size(80.dp),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
+=======
+                if (profileImage != null) {
+                    AsyncImage(
+                        model = profileImage,
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier.size(60.dp),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -120,10 +159,17 @@ fun SellerProfileScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
                 elevation = CardDefaults.cardElevation(2.dp)
             ) {
+<<<<<<< HEAD
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     DetailRow(icon = Icons.Default.Build, label = "Service", value = category)
                     DetailRow(icon = Icons.Default.LocationOn, label = "Location", value = location)
                     DetailRow(icon = Icons.Default.AttachMoney, label = "Starting Price", value = cost)
+=======
+                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    InfoRow(icon = Icons.Default.LocationOn, label = "Base Location", value = displayLocation)
+                    InfoRow(icon = Icons.Default.Phone, label = "Contact number", value = contact)
+                    InfoRow(icon = Icons.Default.AttachMoney, label = "Starting Price", value = cost)
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
                 }
             }
 
@@ -224,6 +270,14 @@ fun SellerProfileScreen(
 
             Button(
                 onClick = { 
+<<<<<<< HEAD
+=======
+                    // SENDING DATA TO FIREBASE
+                    val database = FirebaseDatabase.getInstance()
+                    val myRef = database.getReference("users")
+                    myRef.setValue("Hello")
+
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
                     val newNotification = ServiceRequest(
                         id = System.currentTimeMillis().toString(),
                         userName = profileViewModel.name.value,
@@ -232,7 +286,11 @@ fun SellerProfileScreen(
                         time = "Just now"
                     )
                     profileViewModel.addServiceRequest(newNotification, sellerId)
+<<<<<<< HEAD
                     Toast.makeText(context, "Booking Sent to $sellerName!", Toast.LENGTH_LONG).show()
+=======
+                    Toast.makeText(context, "Booking Sent to $displayName!", Toast.LENGTH_LONG).show()
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(12.dp),
@@ -245,16 +303,14 @@ fun SellerProfileScreen(
 }
 
 @Composable
-fun DetailRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(text = "$label:", fontWeight = FontWeight.Medium, color = Color.Gray)
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(text = value, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+fun InfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+        Spacer(modifier = Modifier.width(16.dp))
+        Column {
+            Text(text = label, style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+            Text(text = value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+        }
     }
 }
 

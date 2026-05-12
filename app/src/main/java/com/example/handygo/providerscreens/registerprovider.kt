@@ -1,7 +1,6 @@
 package com.example.handygo.providerscreens
 
 import android.util.Patterns
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,7 +20,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.handygo.AuthViewModel
 import com.example.handygo.ProfileViewModel
 import com.example.handygo.navigation.ROUTE_LOGIN
+<<<<<<< HEAD
 import com.example.handygo.navigation.ROUTE_PROVIDER_HOME
+=======
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,10 +33,16 @@ fun RegisterProviderScreen(
 ) {
     val context = LocalContext.current
     val authViewModel = remember { AuthViewModel(navController, context) }
+<<<<<<< HEAD
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+=======
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
 
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf(false) }
 
     fun isValidEmail(target: CharSequence): Boolean {
@@ -114,7 +122,7 @@ fun RegisterProviderScreen(
                         focusedLabelColor = MaterialTheme.colorScheme.primary
                     )
                 )
-                
+
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
@@ -135,6 +143,7 @@ fun RegisterProviderScreen(
                     onClick = {
                         if (!isValidEmail(email)) {
                             emailError = true
+<<<<<<< HEAD
                         } else if (password != confirmPassword) {
                             Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
                         } else {
@@ -151,6 +160,25 @@ fun RegisterProviderScreen(
                                 profileImage = profileViewModel.profileImageUri.value
                             )
                         }
+=======
+                            return@Button
+                        }
+
+                        // Using the ViewModel to handle Firebase registration
+                        authViewModel.registerProvider(
+                            email = email,
+                            pass = password,
+                            confpass = confirmPassword,
+                            name = profileViewModel.name.value,
+                            contact = profileViewModel.contact.value,
+                            location = profileViewModel.location.value,
+                            latitude = profileViewModel.latitude.value,
+                            longitude = profileViewModel.longitude.value,
+                            bio = profileViewModel.bio.value,
+                            profileImage = profileViewModel.profileImageUri.value,
+                            category = profileViewModel.myCategory.value
+                        )
+>>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
                     },
                     modifier = Modifier
                         .fillMaxWidth()
