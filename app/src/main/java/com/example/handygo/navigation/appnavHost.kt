@@ -31,10 +31,7 @@ fun AppNavHost(
         composable(ROUTE_USER_PROFILE) { UserProfileScreen(navController, profileViewModel) }
         composable(ROUTE_ADD_SERVICES) { ServicesScreen(navController, profileViewModel) }
         composable(ROUTE_BASIC_DETAILS) { BasicDetailsScreen(navController, profileViewModel) }
-<<<<<<< HEAD
-        composable(ROUTE_LOCATION) { LocationScreen(navController, profileViewModel) }
-=======
->>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
+        // LocationScreen removed as per request
         composable(ROUTE_PROVIDER_DASHBOARD) { ProviderDashboardScreen(navController, profileViewModel) }
         composable(ROUTE_SELLER_PROFILE) { SellerProfileScreen(navController, profileViewModel) }
         composable(ROUTE_SETTINGS) { 

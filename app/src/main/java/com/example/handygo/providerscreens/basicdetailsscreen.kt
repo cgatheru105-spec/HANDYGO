@@ -13,11 +13,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,10 +33,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.handygo.ProfileViewModel
-
 import com.example.handygo.navigation.ROUTE_REGISTER_PROVIDER
 import com.example.handygo.ui.theme.HANDYGOTheme
-import com.google.firebase.database.FirebaseDatabase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,27 +42,33 @@ fun BasicDetailsScreen(
     navController: NavHostController,
     profileViewModel: ProfileViewModel = viewModel()
 ) {
-    var name by remember { mutableStateOf(profileViewModel.name.value) }
-    var contact by remember { mutableStateOf(profileViewModel.contact.value) }
-    var location by remember { mutableStateOf(profileViewModel.location.value) }
-    var bio by remember { mutableStateOf(profileViewModel.bio.value) }
-    var category by remember { mutableStateOf(profileViewModel.myCategory.value) }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-    
-    val categories = listOf("Plumbing", "Electrical", "Cleaning", "Carpentry", "Painting", "Gardening", "Other")
-    var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
-    // Sync location from ViewModel if it changes (e.g. from Map screen)
-    LaunchedEffect(profileViewModel.location.value) {
-        location = profileViewModel.location.value
+    // Set role to provider when this screen is loaded
+    LaunchedEffect(Unit) {
+        profileViewModel.role.value = "provider"
     }
+    
+    // Bind UI directly to ViewModel state using property delegation to persist data across screens
+    var name by profileViewModel.name
+    var contact by profileViewModel.contact
+    var location by profileViewModel.location
+    var bio by profileViewModel.bio
+    var category by profileViewModel.myCategory
+    var profileImageUri by profileViewModel.profileImageUri
+    
+    // Updated to match ServicesScreen options
+    val categories = listOf(
+        "Plumbing", "Electrical", "Barber", "Carpentry", "Painting", 
+        "Cleaning", "Mechanic", "Mason", "Gardener", "Tailor", "Other"
+    )
+    var expanded by remember { mutableStateOf(false) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        imageUri = uri
         if (uri != null) {
-            profileViewModel.profileImageUri.value = uri
+            profileImageUri = uri
         }
     }
 
@@ -113,10 +115,9 @@ fun BasicDetailsScreen(
                     .clickable { launcher.launch("image/*") },
                 contentAlignment = Alignment.Center
             ) {
-                val currentImageUri = imageUri?.toString() ?: profileViewModel.profileImageUri.value
-                if (currentImageUri != null) {
+                if (profileImageUri != null) {
                     AsyncImage(
-                        model = currentImageUri,
+                        model = profileImageUri,
                         contentDescription = "Profile Picture",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
@@ -132,10 +133,10 @@ fun BasicDetailsScreen(
             }
             
             Text(
-                text = if (imageUri == null && profileViewModel.profileImageUri.value == null) "Add Profile Picture" else "Photo Selected",
+                text = if (profileImageUri == null) "Add Profile Picture" else "Photo Selected",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
-                color = if (imageUri == null && profileViewModel.profileImageUri.value == null) MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f) else MaterialTheme.colorScheme.primary,
+                color = if (profileImageUri == null) Color.Gray else MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
             )
 
@@ -214,9 +215,8 @@ fun BasicDetailsScreen(
                 value = location,
                 onValueChange = { location = it },
                 label = { Text("Location") },
-                placeholder = { Text("City, Area") },
+                placeholder = { Text("Enter your City or Area") },
                 modifier = Modifier.fillMaxWidth(),
-                leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -247,18 +247,18 @@ fun BasicDetailsScreen(
 
             Button(
                 onClick = { 
-                    // SENDING DATA TO FIREBASE
-                    val database = FirebaseDatabase.getInstance()
-                    val myRef = database.getReference("users")
-                    myRef.setValue("Hello")
+                    // Update profile triggers local state update, then we move to credentials step
+                    profileViewModel.updateProfile(
+                        context = context,
+                        newName = name,
+                        newContact = contact,
+                        newLocation = location,
+                        newBio = bio,
+                        newCategory = category,
+                        newImageUri = profileImageUri
+                    )
 
-                    profileViewModel.name.value = name
-                    profileViewModel.contact.value = contact
-                    profileViewModel.location.value = location
-                    profileViewModel.bio.value = bio
-                    profileViewModel.myCategory.value = category
-
-                    // NEW NAVIGATION FLOW: Goes directly to Register Provider screen
+                    // Navigate to the next registration step (Credentials)
                     navController.navigate(ROUTE_REGISTER_PROVIDER)
                 },
                 modifier = Modifier
@@ -268,6 +268,7 @@ fun BasicDetailsScreen(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
+                elevation = ButtonDefaults.buttonElevation(4.dp),
                 shape = RoundedCornerShape(12.dp),
                 enabled = name.isNotBlank() && contact.isNotBlank() && location.isNotBlank() && bio.isNotBlank() && category.isNotBlank()
             ) {

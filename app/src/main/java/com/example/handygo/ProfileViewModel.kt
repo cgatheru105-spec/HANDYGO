@@ -1,21 +1,28 @@
 package com.example.handygo
 
+import android.content.Context
+import android.net.Uri
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.handygo.providerscreens.MarketProduct
 import com.example.handygo.providerscreens.ServiceRequest
 import com.google.firebase.auth.FirebaseAuth
-<<<<<<< HEAD
 import com.google.firebase.database.*
-=======
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
-import android.net.Uri
->>>>>>> 46506c0 (Integrated Firebase Storage for public image URLs, updated ViewModels for Uri support, and added image pickers to registration and product posting)
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.asRequestBody
+import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
 
 data class ProviderPost(
     val id: String = "",
@@ -28,16 +35,20 @@ data class ProviderPost(
 class ProfileViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseDatabase.getInstance().getReference()
-    private val storage = FirebaseStorage.getInstance()
+    private val client = OkHttpClient()
+
+    // --- CLOUDINARY CONFIGURATION ---
+    private val CLOUD_NAME = "YOUR_CLOUD_NAME" 
+    private val UPLOAD_PRESET = "YOUR_UPLOAD_PRESET"
 
     // Profile State
-    var name = mutableStateOf("User Name")
-    var contact = mutableStateOf("0712345678")
-    var location = mutableStateOf("Nairobi, Westlands")
-    var latitude = mutableStateOf(-1.286389)
-    var longitude = mutableStateOf(36.817223)
-    var bio = mutableStateOf("I need quick and reliable services.")
-    var myCategory = mutableStateOf("General Provider")
+    var name = mutableStateOf("")
+    var contact = mutableStateOf("")
+    var location = mutableStateOf("")
+    var latitude = mutableDoubleStateOf(0.0)
+    var longitude = mutableDoubleStateOf(0.0)
+    var bio = mutableStateOf("")
+    var myCategory = mutableStateOf("")
     var role = mutableStateOf("user")
     var profileImageUri = mutableStateOf<Uri?>(null)
 
@@ -55,9 +66,11 @@ class ProfileViewModel : ViewModel() {
     val providerPosts = mutableStateListOf<ProviderPost>()
 
     private val authListener = FirebaseAuth.AuthStateListener {
-        fetchProfile()
-        fetchServiceRequests()
-        fetchProviderPosts()
+        if (it.currentUser != null) {
+            fetchProfile()
+            fetchServiceRequests()
+            fetchProviderPosts()
+        }
     }
 
     init {
@@ -74,13 +87,11 @@ class ProfileViewModel : ViewModel() {
     fun fetchProfile() {
         val userId = auth.currentUser?.uid ?: return
         
-        // Try to fetch from users first
         database.child("profiles").child("users").child(userId).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     updateLocalState(snapshot)
                 } else {
-                    // If not in users, check in providers
                     database.child("profiles").child("providers").child(userId).addValueEventListener(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
                             if (snapshot.exists()) {
@@ -96,12 +107,14 @@ class ProfileViewModel : ViewModel() {
     }
 
     private fun updateLocalState(snapshot: DataSnapshot) {
-        name.value = snapshot.child("name").getValue(String::class.java) ?: "User Name"
+        name.value = snapshot.child("name").getValue(String::class.java) ?: ""
         contact.value = snapshot.child("contact").getValue(String::class.java) ?: ""
         location.value = snapshot.child("location").getValue(String::class.java) ?: ""
         bio.value = snapshot.child("bio").getValue(String::class.java) ?: ""
         myCategory.value = snapshot.child("category").getValue(String::class.java) ?: "General"
         role.value = snapshot.child("role").getValue(String::class.java) ?: "user"
+        latitude.doubleValue = snapshot.child("latitude").getValue(Double::class.java) ?: 0.0
+        longitude.doubleValue = snapshot.child("longitude").getValue(Double::class.java) ?: 0.0
         val img = snapshot.child("profileImage").getValue(String::class.java)
         profileImageUri.value = if (img != null) Uri.parse(img) else null
     }
@@ -148,7 +161,6 @@ class ProfileViewModel : ViewModel() {
         })
     }
 
-<<<<<<< HEAD
     fun fetchProviderPosts() {
         val userId = auth.currentUser?.uid ?: return
         database.child("posts").child(userId).addValueEventListener(object : ValueEventListener {
@@ -163,18 +175,64 @@ class ProfileViewModel : ViewModel() {
         })
     }
 
-    fun updateProfile(newName: String, newContact: String, newLocation: String, newBio: String, newCategory: String) {
-=======
-    fun updateProfile(newName: String, newContact: String, newLocation: String, newBio: String, newCategory: String, newImageUri: Uri? = null) {
->>>>>>> 46506c0 (Integrated Firebase Storage for public image URLs, updated ViewModels for Uri support, and added image pickers to registration and product posting)
+    suspend fun uploadToCloudinary(context: Context, imageUri: Uri): String? = withContext(Dispatchers.IO) {
+        try {
+            val file = uriToFile(context, imageUri) ?: return@withContext null
+            val requestBody = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("file", "photo.jpg", file.asRequestBody("image/jpeg".toMediaTypeOrNull()))
+                .addFormDataPart("upload_preset", UPLOAD_PRESET)
+                .build()
+
+            val request = Request.Builder()
+                .url("https://api.cloudinary.com/v1_1/$CLOUD_NAME/image/upload")
+                .post(requestBody)
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext null
+                val result = response.body?.string() ?: return@withContext null
+                val json = JSONObject(result)
+                json.getString("secure_url")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun uriToFile(context: Context, uri: Uri): File? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val file = File(context.cacheDir, "temp_image_${System.currentTimeMillis()}.jpg")
+            val outputStream = FileOutputStream(file)
+            inputStream.copyTo(outputStream)
+            inputStream.close()
+            outputStream.close()
+            file
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun updateProfile(context: Context, newName: String, newContact: String, newLocation: String, newBio: String, newCategory: String, newImageUri: Uri? = null) {
+        // Update local state first (important for registration flow)
+        name.value = newName
+        contact.value = newContact
+        location.value = newLocation
+        bio.value = newBio
+        myCategory.value = newCategory
+        if (newImageUri != null) profileImageUri.value = newImageUri
+
         val userId = auth.currentUser?.uid ?: return
         
-        if (newImageUri != null && !newImageUri.toString().startsWith("http")) {
-            uploadImage("profile_images/$userId.jpg", newImageUri) { downloadUrl ->
-                saveProfileData(userId, newName, newContact, newLocation, newBio, newCategory, downloadUrl)
+        viewModelScope.launch {
+            val imageUrl = if (newImageUri != null && !newImageUri.toString().startsWith("http")) {
+                uploadToCloudinary(context, newImageUri)
+            } else {
+                newImageUri?.toString()
             }
-        } else {
-            saveProfileData(userId, newName, newContact, newLocation, newBio, newCategory, newImageUri?.toString())
+            saveProfileData(userId, newName, newContact, newLocation, newBio, newCategory, imageUrl)
         }
     }
 
@@ -186,88 +244,57 @@ class ProfileViewModel : ViewModel() {
             "bio" to newBio,
             "category" to newCategory
         )
-<<<<<<< HEAD
-<<<<<<< HEAD
-        database.child("profiles").child(userId).updateChildren(profileMap)
-=======
-=======
         profileImageUrl?.let { profileMap["profileImage"] = it }
->>>>>>> 46506c0 (Integrated Firebase Storage for public image URLs, updated ViewModels for Uri support, and added image pickers to registration and product posting)
         
         val node = if (role.value == "provider") "providers" else "users"
         database.child("profiles").child(node).child(userId).updateChildren(profileMap)
         
-        // Update local state
-        name.value = newName
-        contact.value = newContact
-        location.value = newLocation
-        bio.value = newBio
-        myCategory.value = newCategory
-<<<<<<< HEAD
->>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
-=======
         if (profileImageUrl != null) profileImageUri.value = Uri.parse(profileImageUrl)
     }
 
-    private fun uploadImage(path: String, uri: Uri, onSuccess: (String) -> Unit) {
-        val ref = storage.reference.child(path)
-        ref.putFile(uri)
-            .addOnSuccessListener {
-                ref.downloadUrl.addOnSuccessListener { downloadUri ->
-                    onSuccess(downloadUri.toString())
-                }
-            }
->>>>>>> 46506c0 (Integrated Firebase Storage for public image URLs, updated ViewModels for Uri support, and added image pickers to registration and product posting)
-    }
-
     fun updateLocation(newLocation: String, newLat: Double, newLng: Double) {
-        val userId = auth.currentUser?.uid ?: return
+        // Update local state first
         location.value = newLocation
-        latitude.value = newLat
-        longitude.value = newLng
-<<<<<<< HEAD
-        database.child("profiles").child(userId).child("location").setValue(newLocation)
-        database.child("profiles").child(userId).child("latitude").setValue(newLat)
-        database.child("profiles").child(userId).child("longitude").setValue(newLng)
-=======
+        latitude.doubleValue = newLat
+        longitude.doubleValue = newLng
         
         val userId = auth.currentUser?.uid ?: return
+        
         val locationMap = mapOf(
             "location" to newLocation,
             "latitude" to newLat,
             "longitude" to newLng
         )
-        // Only providers typically need coordinates, but we'll update in the correct node
         val node = if (role.value == "provider") "providers" else "users"
         database.child("profiles").child(node).child(userId).updateChildren(locationMap)
->>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
     }
 
-    fun addProduct(product: MarketProduct, imageUri: Uri? = null) {
+    fun addProduct(context: Context, product: MarketProduct, imageUri: Uri? = null) {
         val productId = database.child("marketplace").push().key ?: return
         
-        if (imageUri != null) {
-            uploadImage("product_images/$productId.jpg", imageUri) { downloadUrl ->
-                val newProduct = product.copy(id = productId, imageUri = downloadUrl)
-                database.child("marketplace").child(productId).setValue(newProduct)
-            }
-        } else {
-            val newProduct = product.copy(id = productId)
+        viewModelScope.launch {
+            val imageUrl = if (imageUri != null) {
+                uploadToCloudinary(context, imageUri)
+            } else null
+            
+            val newProduct = product.copy(id = productId, imageUri = imageUrl)
             database.child("marketplace").child(productId).setValue(newProduct)
         }
     }
 
-    fun addPost(post: ProviderPost) {
-<<<<<<< HEAD
+    fun addPost(context: Context, post: ProviderPost, imageUri: Uri? = null) {
         val userId = auth.currentUser?.uid ?: return
         val postId = database.child("posts").child(userId).push().key ?: return
-        val newPost = post.copy(id = postId)
-        database.child("posts").child(userId).child(postId).setValue(newPost)
-=======
-        val postId = database.child("posts").push().key ?: return
-        database.child("posts").child(postId).setValue(post)
-        providerPosts.add(0, post)
->>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
+        
+        viewModelScope.launch {
+            val imageUrl = if (imageUri != null) {
+                uploadToCloudinary(context, imageUri)
+            } else post.imageUri
+            
+            val newPost = post.copy(id = postId, imageUri = imageUrl)
+            database.child("posts").child(userId).child(postId).setValue(newPost)
+            providerPosts.add(0, newPost)
+        }
     }
 
     fun addServiceRequest(request: ServiceRequest, providerId: String) {

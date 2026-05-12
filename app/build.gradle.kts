@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
 }
@@ -36,6 +37,11 @@ android {
     }
 }
 
+// Modern way to set JVM target for Kotlin 2.0+
+kotlin {
+    jvmToolchain(11)
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -55,17 +61,15 @@ dependencies {
 
     implementation(libs.material)
     
-<<<<<<< HEAD
     // Firebase and Image Loading
     implementation(platform("com.google.firebase:firebase-bom:34.13.0"))
-=======
-    // Firebase dependencies
-    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
->>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
-    implementation("com.google.firebase:firebase-storage-ktx")
+    implementation(libs.firebase.storage)
     implementation(libs.coil.compose)
+    
+    // Networking
+    implementation(libs.okhttp)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

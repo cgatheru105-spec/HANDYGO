@@ -2,6 +2,7 @@ package com.example.handygo.providerscreens
 
 import android.util.Patterns
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -10,7 +11,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,10 +32,6 @@ import coil.compose.AsyncImage
 import com.example.handygo.AuthViewModel
 import com.example.handygo.ProfileViewModel
 import com.example.handygo.navigation.ROUTE_LOGIN
-<<<<<<< HEAD
-import com.example.handygo.navigation.ROUTE_PROVIDER_HOME
-=======
->>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,18 +41,12 @@ fun RegisterProviderScreen(
 ) {
     val context = LocalContext.current
     val authViewModel = remember { AuthViewModel(navController, context) }
-<<<<<<< HEAD
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-=======
->>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf(false) }
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(profileViewModel.profileImageUri.value) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -195,28 +185,14 @@ fun RegisterProviderScreen(
                     onClick = {
                         if (!isValidEmail(email)) {
                             emailError = true
-<<<<<<< HEAD
-                        } else if (password != confirmPassword) {
-                            Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
-                        } else {
-                            authViewModel.registerProvider(
-                                email = email,
-                                pass = password,
-                                confpass = confirmPassword,
-                                name = profileViewModel.name.value,
-                                contact = profileViewModel.contact.value,
-                                location = profileViewModel.location.value,
-                                latitude = profileViewModel.latitude.value,
-                                longitude = profileViewModel.longitude.value,
-                                bio = profileViewModel.bio.value,
-                                profileImage = profileViewModel.profileImageUri.value
-                            )
-                        }
-=======
                             return@Button
                         }
 
-                        // Using the ViewModel to handle Firebase registration
+                        if (password != confirmPassword) {
+                            Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
                         authViewModel.registerProvider(
                             email = email,
                             pass = password,
@@ -230,7 +206,6 @@ fun RegisterProviderScreen(
                             profileImageUri = selectedImageUri,
                             category = profileViewModel.myCategory.value
                         )
->>>>>>> 1f99d742bdf6bf12ca4e592920f142c2caa6c289
                     },
                     modifier = Modifier
                         .fillMaxWidth()
