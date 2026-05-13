@@ -190,7 +190,12 @@ class AuthViewModel : ViewModel() {
 
         try {
             profileRef.setValue(profileMap).await()
-            Toast.makeText(context, "${role.replaceFirstChar { it.uppercase() }} Registered and data saved!", Toast.LENGTH_LONG).show()
+//            Toast.makeText(context, "${role.replaceFirstChar { it.uppercase() }} Registered and data saved!", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                context,
+                "${role.uppercase()} Registered and data saved!",
+                Toast.LENGTH_LONG
+            ).show()
             val route = if (role == "provider") ROUTE_PROVIDER_HOME else ROUTE_USER_HOME
             navController.navigate(route) {
                 popUpTo(ROUTE_LOGIN) { inclusive = true }

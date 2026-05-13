@@ -61,7 +61,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.core)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
-    
+    implementation(libs.kotlinx.coroutines.play.services)
     // Maps
     implementation(libs.maps.compose)
     implementation(libs.google.maps)
@@ -69,12 +69,16 @@ dependencies {
     implementation(libs.material)
     
     // Firebase and Image Loading
-    implementation(platform("com.google.firebase:firebase-bom:34.13.0"))
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.database)
-    implementation(libs.firebase.storage)
+
+
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-database-ktx")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
-    implementation(libs.coil.compose)
+
     
     // Networking
     implementation(libs.okhttp)

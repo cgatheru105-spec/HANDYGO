@@ -48,7 +48,8 @@ import com.example.handygo.navigation.ROUTE_REGISTER_USER
 import com.google.firebase.database.FirebaseDatabase
 
 @Composable
-fun LoginScreen(navController: NavHostController) {
+fun LoginScreen(navController: NavHostController,
+                myauth: AuthViewModel = viewModel()) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -129,13 +130,15 @@ fun LoginScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(32.dp))
         
-        val myauth: AuthViewModel = viewModel()
+            
+//        val myauth: AuthViewModel = viewModel()
         Button(
+
             onClick = {
                 val database = FirebaseDatabase.getInstance()
                 val myRef = database.getReference("users")
                 myRef.setValue("Hello")
-
+                print("$email, $password, $navController, $context")
                 myauth.login(email, password, navController, context)
             },
             colors = ButtonDefaults.buttonColors(
