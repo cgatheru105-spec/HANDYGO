@@ -39,6 +39,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.handygo.AuthViewModel
@@ -128,14 +129,14 @@ fun LoginScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(32.dp))
         
-        val myauth = remember { AuthViewModel(navController, context) }
+        val myauth: AuthViewModel = viewModel()
         Button(
             onClick = {
                 val database = FirebaseDatabase.getInstance()
                 val myRef = database.getReference("users")
                 myRef.setValue("Hello")
 
-                myauth.login(email, password)
+                myauth.login(email, password, navController, context)
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -155,7 +156,7 @@ fun LoginScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        TextButton(onClick = { myauth.forgotPassword(email) }) {
+        TextButton(onClick = { myauth.forgotPassword(email, context) }) {
             Text(
                 text = "Forgot Password?",
                 color = MaterialTheme.colorScheme.primary

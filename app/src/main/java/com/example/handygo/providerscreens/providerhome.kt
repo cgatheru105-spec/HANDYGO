@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.handygo.CloudinaryManager
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
@@ -64,7 +65,7 @@ fun ProviderHomeScreen(
     val requestsCount = profileViewModel.serviceRequests.size
     val providerPosts = profileViewModel.providerPosts
     var showPostDialog by remember { mutableStateOf(false) }
-    var showServiceDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -223,13 +224,8 @@ fun ProviderHomeScreen(
         PostProductDialog(
             profileViewModel = profileViewModel,
             onDismiss = { showPostDialog = false },
-<<<<<<< HEAD
-            onPost = { newProduct ->
-                profileViewModel.addProduct(newProduct)
-=======
             onPost = { newProduct, imageUri ->
-                profileViewModel.addProduct(newProduct, imageUri)
->>>>>>> 46506c0 (Integrated Firebase Storage for public image URLs, updated ViewModels for Uri support, and added image pickers to registration and product posting)
+                profileViewModel.addProduct(context, newProduct, imageUri)
                 showPostDialog = false
                 navHostController.navigate(ROUTE_PROVIDER_DASHBOARD)
             }
@@ -238,8 +234,8 @@ fun ProviderHomeScreen(
     if (showServiceDialog) {
         PostServiceDialog(
             onDismiss = { showServiceDialog = false },
-            onPost = { newPost ->
-                profileViewModel.addPost(newPost)
+            onPost = { newPost, imageUri ->
+                profileViewModel.addPost(context, newPost, imageUri)
                 showServiceDialog = false
             }
         )
@@ -248,7 +244,7 @@ fun ProviderHomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PostServiceDialog(onDismiss: () -> Unit, onPost: (ProviderPost) -> Unit) {
+fun PostServiceDialog(onDismiss: () -> Unit, onPost: (ProviderPost, Uri?) -> Unit) {
     var description by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
@@ -312,9 +308,8 @@ fun PostServiceDialog(onDismiss: () -> Unit, onPost: (ProviderPost) -> Unit) {
                             id = System.currentTimeMillis().toString(),
                             description = description,
                             location = location,
-                            time = "Just now",
-                            imageUri = selectedImageUri?.toString()
-                        ))
+                            time = "Just now"
+                        ), selectedImageUri)
                     }
                 },
                 enabled = description.isNotBlank()
@@ -483,16 +478,43 @@ fun PostProductDialog(
             Button(
                 onClick = {
                     if (name.isNotBlank() && price.isNotBlank()) {
-                        onPost(MarketProduct(
-                            id = System.currentTimeMillis().toString(),
-                            name = name,
-                            description = description,
-                            price = price,
-                            location = location,
-                            sellerName = profileViewModel.name.value,
-                            sellerId = auth.currentUser?.uid ?: "",
-                            imageUri = selectedImageUri?.toString()
-                        ), selectedImageUri)
+                        if (selectedImageUri != null) {
+                            CloudinaryManager.uploadImage(
+                                imageUri = selectedImageUri!!,
+                                onSuccess = { imageUrl ->
+                                    onPost(
+                                        MarketProduct(
+                                            id = System.currentTimeMillis().toString(),
+                                            name = name,
+                                            description = description,
+                                            price = price,
+                                            location = location,
+                                            sellerName = profileViewModel.name.value,
+                                            sellerId = auth.currentUser?.uid ?: "",
+                                            imageUri = imageUrl
+                                        ),
+                                        null
+                                    )
+                                },
+                                onError = {
+                                    println("Cloudinary Error: $it")
+                                }
+                            )
+                        } else {
+                            onPost(
+                                MarketProduct(
+                                    id = System.currentTimeMillis().toString(),
+                                    name = name,
+                                    description = description,
+                                    price = price,
+                                    location = location,
+                                    sellerName = profileViewModel.name.value,
+                                    sellerId = auth.currentUser?.uid ?: "",
+                                    imageUri = null
+                                ),
+                                null
+                            )
+                        }
                     }
                 },
                 enabled = name.isNotBlank() && price.isNotBlank()

@@ -12,7 +12,7 @@ android {
     defaultConfig {
         applicationId = "com.example.handygo"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -34,6 +34,13 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("androidx.core:core-ktx:1.13.1")
+        force("androidx.core:core:1.13.1")
     }
 }
 
@@ -66,10 +73,16 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
     implementation(libs.firebase.storage)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
     implementation(libs.coil.compose)
     
     // Networking
     implementation(libs.okhttp)
+    implementation(libs.cloudinary.android)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

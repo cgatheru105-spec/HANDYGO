@@ -12,17 +12,7 @@ import com.example.handygo.providerscreens.ServiceRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.asRequestBody
-import org.json.JSONObject
-import java.io.File
-import java.io.FileOutputStream
 
 data class ProviderPost(
     val id: String = "",
@@ -35,11 +25,6 @@ data class ProviderPost(
 class ProfileViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseDatabase.getInstance().getReference()
-    private val client = OkHttpClient()
-
-    // --- CLOUDINARY CONFIGURATION ---
-    private val CLOUD_NAME = "YOUR_CLOUD_NAME" 
-    private val UPLOAD_PRESET = "YOUR_UPLOAD_PRESET"
 
     // Profile State
     var name = mutableStateOf("")
@@ -175,44 +160,8 @@ class ProfileViewModel : ViewModel() {
         })
     }
 
-    suspend fun uploadToCloudinary(context: Context, imageUri: Uri): String? = withContext(Dispatchers.IO) {
-        try {
-            val file = uriToFile(context, imageUri) ?: return@withContext null
-            val requestBody = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("file", "photo.jpg", file.asRequestBody("image/jpeg".toMediaTypeOrNull()))
-                .addFormDataPart("upload_preset", UPLOAD_PRESET)
-                .build()
-
-            val request = Request.Builder()
-                .url("https://api.cloudinary.com/v1_1/$CLOUD_NAME/image/upload")
-                .post(requestBody)
-                .build()
-
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) return@withContext null
-                val result = response.body?.string() ?: return@withContext null
-                val json = JSONObject(result)
-                json.getString("secure_url")
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
-    private fun uriToFile(context: Context, uri: Uri): File? {
-        return try {
-            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-            val file = File(context.cacheDir, "temp_image_${System.currentTimeMillis()}.jpg")
-            val outputStream = FileOutputStream(file)
-            inputStream.copyTo(outputStream)
-            inputStream.close()
-            outputStream.close()
-            file
-        } catch (e: Exception) {
-            null
-        }
+    suspend fun uploadToCloudinary(imageUri: Uri): String? {
+        return CloudinaryManager.uploadImageAsync(imageUri)
     }
 
     fun updateProfile(context: Context, newName: String, newContact: String, newLocation: String, newBio: String, newCategory: String, newImageUri: Uri? = null) {
@@ -228,7 +177,7 @@ class ProfileViewModel : ViewModel() {
         
         viewModelScope.launch {
             val imageUrl = if (newImageUri != null && !newImageUri.toString().startsWith("http")) {
-                uploadToCloudinary(context, newImageUri)
+                uploadToCloudinary(newImageUri)
             } else {
                 newImageUri?.toString()
             }
@@ -274,8 +223,8 @@ class ProfileViewModel : ViewModel() {
         
         viewModelScope.launch {
             val imageUrl = if (imageUri != null) {
-                uploadToCloudinary(context, imageUri)
-            } else null
+                uploadToCloudinary(imageUri)
+            } else product.imageUri
             
             val newProduct = product.copy(id = productId, imageUri = imageUrl)
             database.child("marketplace").child(productId).setValue(newProduct)
@@ -288,7 +237,7 @@ class ProfileViewModel : ViewModel() {
         
         viewModelScope.launch {
             val imageUrl = if (imageUri != null) {
-                uploadToCloudinary(context, imageUri)
+                uploadToCloudinary(imageUri)
             } else post.imageUri
             
             val newPost = post.copy(id = postId, imageUri = imageUrl)

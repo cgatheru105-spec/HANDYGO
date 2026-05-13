@@ -40,7 +40,7 @@ fun RegisterProviderScreen(
     profileViewModel: ProfileViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val authViewModel = remember { AuthViewModel(navController, context) }
+    val authViewModel: AuthViewModel = viewModel()
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -200,11 +200,13 @@ fun RegisterProviderScreen(
                             name = profileViewModel.name.value,
                             contact = profileViewModel.contact.value,
                             location = profileViewModel.location.value,
-                            latitude = profileViewModel.latitude.value,
-                            longitude = profileViewModel.longitude.value,
+                            latitude = profileViewModel.latitude.doubleValue,
+                            longitude = profileViewModel.longitude.doubleValue,
                             bio = profileViewModel.bio.value,
                             profileImageUri = selectedImageUri,
-                            category = profileViewModel.myCategory.value
+                            category = profileViewModel.myCategory.value,
+                            navController = navController,
+                            context = context
                         )
                     },
                     modifier = Modifier

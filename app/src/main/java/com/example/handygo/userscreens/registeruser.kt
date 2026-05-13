@@ -29,7 +29,7 @@ fun RegisterUserScreen(
     profileViewModel: ProfileViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val authViewModel = remember { AuthViewModel(navController, context) }
+    val authViewModel: AuthViewModel = viewModel()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -144,7 +144,9 @@ fun RegisterUserScreen(
                                 name = "New User",
                                 contact = "",
                                 location = "",
-                                bio = ""
+                                bio = "",
+                                navController = navController,
+                                context = context
                             )
                         }
                     },

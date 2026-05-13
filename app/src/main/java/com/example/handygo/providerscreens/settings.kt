@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.handygo.AuthViewModel
@@ -25,7 +26,7 @@ fun SettingsScreen(
     navController: NavHostController
 ) {
     val context = LocalContext.current
-    val authViewModel = AuthViewModel(navController, context)
+    val authViewModel: AuthViewModel = viewModel()
 
     Scaffold(
         topBar = {
@@ -71,7 +72,7 @@ fun SettingsScreen(
                 )
             ) {
                 TextButton(
-                    onClick = { authViewModel.logout() },
+                    onClick = { authViewModel.logout(navController, context) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
